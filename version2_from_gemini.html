@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加权轮询线索分配模拟器 Version 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Helvetica Neue', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+        .highlight {
+            animation: highlight-animation 1.5s ease-out;
+        }
+        @keyframes highlight-animation {
+            0% { background-color: #fef9c3; transform: scale(1); }
+            20% { background-color: #fef9c3; transform: scale(1.02); }
+            100% { background-color: transparent; transform: scale(1); }
+        }
+        .log-item-enter {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .log-item-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">加权轮询 (Smooth WRR) 线索分配模拟器 - Version 2</h1>
+            <p class="mt-2 text-md text-gray-600">支持自定义用户权重，并自动计算分配百分比，确保流式均等分配</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">模拟控制</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="assign-one-btn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-sm">分配 1 条</button>
+                        <button id="assign-ten-btn" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 shadow-sm">分配 10 条</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-3">
+                        <button id="assign-50-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-sm">分配 50 条</button>
+                        <button id="assign-100-btn" class="w-full bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-600 transition duration-300 shadow-sm">分配 100 条</button>
+                        <button id="assign-200-btn" class="w-full bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-300 shadow-sm">分配 200 条</button>
+                        <button id="assign-300-btn" class="w-full bg-purple-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-600 transition duration-300 shadow-sm">分配 300 条</button>
+                    </div>
+                    <button id="reset-btn" class="mt-3 w-full bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300 shadow-sm">重置模拟</button>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h2 class="text-xl font-semibold">销售团队配置</h2>
+                        <button id="add-user-btn" class="bg-green-500 text-white text-sm font-bold py-1 px-3 rounded-full hover:bg-green-600 transition duration-300 shadow-sm">+ 新增</button>
+                    </div>
+                    <div class="flex text-xs text-gray-500 font-semibold px-2 mb-2">
+                        <div class="flex-grow">销售名称</div>
+                        <div class="w-24 text-center">用户权重</div>
+                    </div>
+                    <div id="user-config-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                        </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">销售团队实时状态</h2>
+                    <div class="flex text-xs text-gray-500 font-semibold px-4 mb-2">
+                        <div class="w-2/12">销售</div>
+                        <div class="w-2/12 text-center">用户权重</div>
+                        <div class="w-2/12 text-center">权重占比</div>
+                        <div class="w-2/12 text-center">动态权重</div>
+                        <div class="w-2/12 text-center">已获线索</div>
+                        <div class="w-2/12 text-center">线索占比</div>
+                    </div>
+                    <div id="user-status-list" class="space-y-2">
+                        </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">分配日志</h2>
+                    <div id="log-container" class="h-64 overflow-y-auto space-y-2 pr-2">
+                        <p id="log-placeholder" class="text-center text-gray-400 mt-8">暂无分配记录，请点击左侧按钮开始模拟。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = {
+                // DOM 元素
+                elements: {
+                    userConfigList: document.getElementById('user-config-list'),
+                    userStatusList: document.getElementById('user-status-list'),
+                    logContainer: document.getElementById('log-container'),
+                    logPlaceholder: document.getElementById('log-placeholder'),
+                    addUserBtn: document.getElementById('add-user-btn'),
+                    assignOneBtn: document.getElementById('assign-one-btn'),
+                    assignTenBtn: document.getElementById('assign-ten-btn'),
+                    assign50Btn: document.getElementById('assign-50-btn'),
+                    assign100Btn: document.getElementById('assign-100-btn'),
+                    assign200Btn: document.getElementById('assign-200-btn'),
+                    assign300Btn: document.getElementById('assign-300-btn'),
+                    resetBtn: document.getElementById('reset-btn'),
+                },
+
+                // 状态
+                state: {
+                    salesTeam: [],
+                    leadCounter: 0,
+                    log: [],
+                },
+
+                // 初始化
+                init() {
+                    this.bindEvents();
+                    this.loadInitialData();
+                    this.render();
+                },
+
+                // 绑定事件
+                bindEvents() {
+                    this.elements.addUserBtn.addEventListener('click', () => this.addUser());
+                    this.elements.assignOneBtn.addEventListener('click', () => this.runSimulation(1));
+                    this.elements.assignTenBtn.addEventListener('click', () => this.runSimulation(10));
+                    this.elements.assign50Btn.addEventListener('click', () => this.runSimulation(50));
+                    this.elements.assign100Btn.addEventListener('click', () => this.runSimulation(100));
+                    this.elements.assign200Btn.addEventListener('click', () => this.runSimulation(200));
+                    this.elements.assign300Btn.addEventListener('click', () => this.runSimulation(300));
+                    this.elements.resetBtn.addEventListener('click', () => this.reset());
+                    
+                    // 事件委托处理用户配置的变更
+                    this.elements.userConfigList.addEventListener('input', (e) => {
+                        if (e.target.dataset.field === 'name') {
+                            this.updateUser(e.target.dataset.id, 'name', e.target.value);
+                        }
+                        if (e.target.dataset.field === 'weight') {
+                            const weight = parseFloat(e.target.value); // 允许浮点数
+                            if (!isNaN(weight) && weight >= 0) {
+                                this.updateUser(e.target.dataset.id, 'staticWeight', weight);
+                            }
+                        }
+                    });
+
+                    this.elements.userConfigList.addEventListener('click', (e) => {
+                        if (e.target.closest('.remove-user-btn')) {
+                            this.removeUser(e.target.closest('.remove-user-btn').dataset.id);
+                        }
+                    });
+                },
+
+                // 加载初始数据
+                loadInitialData() {
+                    this.state.salesTeam = [
+                        { id: crypto.randomUUID(), name: 'User-A', staticWeight: 1.5, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'User-B', staticWeight: 1.2, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'User-C', staticWeight: 0.9, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'User-D', staticWeight: 1.0, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'User-E', staticWeight: 0.8, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'User-F', staticWeight: 0.5, currentWeight: 0, leadCount: 0 },
+                    ];
+                },
+
+                // 核心算法：分配一条线索
+                assignSingleLead() {
+                    if (this.state.salesTeam.length === 0) {
+                        this.logMessage('团队中没有销售人员，无法分配。');
+                        return;
+                    }
+
+                    let totalStaticWeight = this.state.salesTeam.reduce((sum, user) => sum + user.staticWeight, 0);
+                    let bestCandidate = null;
+
+                    // 1. 遍历所有用户，更新其动态权重
+                    this.state.salesTeam.forEach(user => {
+                        user.currentWeight += user.staticWeight;
+                    });
+                    
+                    // 2. 找到动态权重最高的用户
+                    // 处理所有用户权重均为0的情况
+                    if (totalStaticWeight === 0) {
+                        // 如果所有权重都为0，则按轮询分配给第一个人（或任何稳定顺序）
+                        // 现有的 Smooth WRR 算法，如果 totalStaticWeight 为 0，会导致 currentWeight 永远是 staticWeight，然后减去 0，所以会持续累加。
+                        // 这里需要一个特殊处理，如果 totalStaticWeight 是 0，则应该视为均等分配
+                        if (this.state.salesTeam.length > 0) {
+                            // 简单的轮询，找到当前 leadCount 最低的用户
+                            bestCandidate = this.state.salesTeam.reduce((prev, curr) => 
+                                (prev.leadCount <= curr.leadCount ? prev : curr), this.

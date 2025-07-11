@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM线索分配系统 V2.0 - 智能权重管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        .highlight { animation: pulse 1s ease-out; }
+        @keyframes pulse { 0% { background-color: #fef9c3; } 100% { background-color: transparent; } }
+        
+        /* 悬停卡片样式 */
+        .staff-card {
+            position: absolute;
+            z-index: 1000;
+            display: none;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            width: 280px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        /* 销售团队配置表格行高度 */
+        #team-table tr {
+            height: 48.5px;
+        }
+        
+        .staff-card.show {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .staff-name-hover {
+            position: relative;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-color: transparent;
+            transition: all 0.2s;
+        }
+        
+        .staff-name-hover:hover {
+            text-decoration-color: #3b82f6;
+            color: #3b82f6;
+        }
+        
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="max-w-full mx-auto p-6">
+    <header class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">CRM线索分配系统 V2.0</h1>
+        <p class="text-gray-600 mt-2">智能权重管理 + 平滑加权轮询算法</p>
+    </header>
+
+    <!-- 模拟控制器 - 移到页面上部 -->
+    <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-center">模拟控制</h2>
+        <div class="grid grid-cols-3 md:grid-cols-6 gap-3 max-w-4xl mx-auto">
+            <button onclick="simulate(1)" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 text-sm">分配 1 条</button>
+            <button onclick="simulate(10)" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 text-sm">分配 10 条</button>
+            <button onclick="simulate(50)" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 text-sm">分配 50 条</button>
+            <button onclick="simulate(100)" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 text-sm">分配 100 条</button>
+            <button onclick="simulate(200)" class="bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 text-sm">分配 200 条</button>
+            <button onclick="reset()" class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 text-sm">重置统计</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <!-- 左侧：团队配置 -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">销售团队配置</h2>
+                    <button id="add-user" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">+ 新增销售</button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr class="text-sm text-gray-600">
+                                <th class="p-3 text-left cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">
+                                    姓名 <span id="sort-name" class="ml-1">⇅</span>
+                                </th>
+                                <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortTable('department')">
+                                    部门 <span id="sort-department" class="ml-1">⇅</span>
+                                </th>
+                                <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortTable('level')">
+                                    职级 <span id="sort-level" class="ml-1">⇅</span>
+                                </th>
+                                <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortTable('weight')">
+                                    权重 <span id="sort-weight" class="ml-1">⇅</span>
+                                </th>
+                                <th class="p-3 text-center">权重百分比</th>
+                                <th class="p-3 text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="team-table">
+                            <!-- 动态生成销售员行 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+                    <p><strong>权重说明：</strong>默认权重为1.0，可设置0.5-2.0范围内的权重值</p>
+                    <p><strong>百分比计算：</strong>最后一位销售的百分比自动调整确保总和为100%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：实时状态 -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold mb-4">分配状态</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr class="text-sm text-gray-600">
+                                <th class="p-3 text-left">姓名</th>
+                                <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortStatusTable('department')">
+                                    部门 <span id="status-sort-department" class="ml-1">⇅</span>
+                                </th>
+                                <th class="p-3 text-center">职级</th>
+                                <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortStatusTable('weight')">
+                                    设定权重 <span id="status-sort-weight" class="ml-1">⇅</span>
+                                </th>
+                                <th class="p-3 text-center">动态权重</th>
+                                <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortStatusTable('leadCount')">
+                                    已分配条数 <span id="status-sort-leadCount" class="ml-1">⇅</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="status-panel">
+                            <!-- 动态生成状态行 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold mb-4">分配日志</h2>
+                <div id="log-panel" class="h-64 overflow-y-auto bg-gray-50 p-3 rounded-lg">
+                    <p class="text-gray-500 text-center">暂无分配记录</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 根据权重计算职级
+function calculateLevel(weight) {
+    if (weight >= 1.2) return 'L3';
+    if (weight >= 0.8) return 'L2';
+    return 'L1';
+}
+
+// 生成随机业绩数据
+function generateRandomPerformance() {
+    const availableGroups = [
+        '快商通表单在线',
+        '市场表单投放',
+        '集训营专项投放',
+        '26开学季站内加微',
+        '26开学季站外加微',
+        '26定金计算机',
+        '26定金电气',
+        '体验课投放自动分配1v1'
+    ];
+    
+    // 随机选择1-3个分配组
+    const groupCount = Math.floor(Math.random() * 3) + 1; // 1-3个
+    const selectedGroups = [];
+    const shuffledGroups = [...availableGroups].sort(() => Math.random() - 0.5);
+    
+    for (let i = 0; i < groupCount; i++) {
+        selectedGroups.push(shuffledGroups[i]);
+    }
+    
+    return {
+        monthlyPerformance: Math.floor(Math.random() * 33) + 8, // 8-40万
+        monthlyDeals: Math.floor(Math.random() * 7) + 1, // 1-7
+        monthlyLeads: Math.floor(Math.random() * 201) + 100, // 100-300条
+        conversionRate: (Math.random() * 2.5 + 0.5).toFixed(1), // 0.5-3.0%
+        assignGroup: selectedGroups.join('、') // 用顿号分隔多个分配组
+    };
+}
+
+// 全局状态管理
+let salesTeam = [];
+
+// 初始化销售团队数据
+function initializeSalesTeam() {
+    salesTeam = [
+        { 
+            id: 1, name: '张三', weight: 1.5, department: '一部', level: 'L3', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        },
+        { 
+            id: 2, name: '李四', weight: 1.2, department: '一部', level: 'L3', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        },
+        { 
+            id: 3, name: '王五', weight: 1.0, department: '一部', level: 'L2', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        },
+        { 
+            id: 4, name: '赵六', weight: 0.9, department: '二部', level: 'L2', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        },
+        { 
+            id: 5, name: '钱七', weight: 0.8, department: '二部', level: 'L2', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        },
+        { 
+            id: 6, name: '孙八', weight: 1.1, department: '二部', level: 'L2', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        },
+        { 
+            id: 7, name: '周九', weight: 0.7, department: '二部', level: 'L1', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        },
+        { 
+            id: 8, name: '吴十', weight: 1.3, department: '三部', level: 'L3', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        },
+        { 
+            id: 9, name: '陈十一', weight: 0.6, department: '三部', level: 'L1', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        },
+        { 
+            id: 10, name: '刘十二', weight: 0.9, department: '三部', level: 'L2', currentWeight: 0, leadCount: 0,
+            ...generateRandomPerformance()
+        }
+    ];
+}
+
+let leadCounter = 0;
+let logs = [];
+let sortConfig = { column: null, direction: null }; // 排序配置：column和direction
+let statusSortConfig = { column: 'weight', direction: 'desc' }; // 右侧分配状态表格的排序配置，默认按设定权重降序
+
+// 计算权重百分比
+function calculatePercentages() {
+    if (salesTeam.length === 0) return [];
+    
+    const totalWeight = salesTeam.reduce((sum, user) => sum + user.weight, 0);
+    const percentages = [];
+    let accumulatedPercentage = 0;
+    
+    // 计算前n-1个用户的百分比
+    for (let i = 0; i < salesTeam.length - 1; i++) {
+        const percentage = (salesTeam[i].weight / totalWeight) * 100;
+        percentages.push(percentage);
+        accumulatedPercentage += percentage;
+    }
+    
+    // 最后一个用户的百分比 = 100% - 前面所有用户的百分比总和
+    if (salesTeam.length > 0) {
+        percentages.push(100 - accumulatedPercentage);
+    }
+    
+    return percentages;
+}
+
+// 平滑加权轮询算法 - 核心实现
+function assignLead() {
+    if (salesTeam.length === 0) return null;
+    
+    let bestCandidate = null;
+    let totalWeight = 0;
+    
+    // 1. 更新每个销售的当前权重，找出最大权重者
+    salesTeam.forEach(user => {
+        user.currentWeight += user.weight;
+        totalWeight += user.weight;
+        
+        if (!bestCandidate || user.currentWeight > bestCandidate.currentWeight) {
+            bestCandidate = user;
+        }
+    });
+    
+    // 2. 减少被选中者的当前权重
+    if (bestCandidate) {
+        bestCandidate.currentWeight -= totalWeight;
+        bestCandidate.leadCount++;
+        leadCounter++;
+        
+        // 3. 记录日志
+        logs.unshift({
+            id: leadCounter,
+            assignee: bestCandidate.name,
+            timestamp: new Date().toLocaleTimeString(),
+            userId: bestCandidate.id
+        });
+        
+        if (logs.length > 50) logs.pop(); // 保持日志长度
+    }
+    
+    return bestCandidate;
+}
+
+// 模拟分配
+function simulate(count) {
+    for (let i = 0; i < count; i++) {
+        assignLead();
+    }
+    renderAll();
+}
+
+// 重置统计
+function reset() {
+    salesTeam.forEach(user => {
+        user.currentWeight = 0;
+        user.leadCount = 0;
+    });
+    leadCounter = 0;
+    logs = [];
+    renderAll();
+}
+
+// 添加销售
+function addUser() {
+    const newId = Math.max(...salesTeam.map(u => u.id), 0) + 1;
+    const defaultWeight = 1.0;
+    salesTeam.push({
+        id: newId,
+        name: `销售${newId}`,
+        weight: defaultWeight,
+        department: '一部',
+        level: calculateLevel(defaultWeight),
+        currentWeight: 0,
+        leadCount: 0,
+        ...generateRandomPerformance()
+    });
+    renderAll();
+}
+
+// 删除销售
+function removeUser(id) {
+    salesTeam = salesTeam.filter(user => user.id !== id);
+    renderAll();
+}
+
+// 更新销售信息
+function updateUser(id, field, value) {
+    const user = salesTeam.find(u => u.id === id);
+    if (user) {
+        if (field === 'weight') {
+            const weight = parseFloat(value);
+            if (weight >= 0.5 && weight <= 2.0) {
+                user[field] = weight;
+                // 权重改变时自动更新职级
+                user.level = calculateLevel(weight);
+            }
+        } else {
+            user[field] = value;
+        }
+        renderAll();
+    }
+}
+
+// 显示员工卡片
+function showStaffCard(event, user) {
+    // 隐藏所有其他卡片
+    document.querySelectorAll('.staff-card').forEach(card => {
+        card.classList.remove('show');
+    });
+    
+    const card = document.getElementById(`staff-card-${user.id}`);
+    if (card) {
+        const rect = event.target.getBoundingClientRect();
+        
+        // 先设置transform为none，避免动画冲突
+        card.style.transform = 'none';
+        
+        // 基于姓名位置向右偏移80px
+        let leftPos = rect.left + 80;
+        let topPos = rect.top + window.scrollY;
+        
+        // 检查是否超出右边界，如果超出则调整位置
+        if (leftPos + 280 > window.innerWidth) { // 卡片宽度280px
+            leftPos = window.innerWidth - 280 - 20; // 确保不超出窗口，留20px边距
+        }
+        
+        // 检查是否超出左边界
+        if (leftPos < 20) {
+            leftPos = 20; // 最小左边距
+        }
+        
+        // 设置位置
+        card.style.left = leftPos + 'px';
+        card.style.top = topPos + 'px';
+        
+        // 最后显示卡片
+        card.classList.add('show');
+    }
+}
+
+// 隐藏员工卡片
+function hideStaffCard(user) {
+    const card = document.getElementById(`staff-card-${user.id}`);
+    if (card) {
+        card.classList.remove('show');
+    }
+}
+
+// 渲染团队配置表格
+function renderTeamTable() {
+    const percentages = calculatePercentages();
+    const tbody = document.getElementById('team-table');
+    
+    tbody.innerHTML = salesTeam.map((user, index) => `
+        <tr class="border-b hover:bg-gray-50">
+            <td class="p-3 font-medium text-gray-900">
+                <span class="staff-name-hover"
+                      onmouseenter="showStaffCard(event, ${JSON.stringify(user).replace(/"/g, '&quot;')})"
+                      onmouseleave="hideStaffCard(${JSON.stringify(user).replace(/"/g, '&quot;')})">
+                    ${user.name}
+                </span>
+            </td>
+            <td class="p-3 text-center text-orange-600 font-semibold">${user.department}</td>
+            <td class="p-3 text-center text-purple-600 font-semibold">${user.level}</td>
+            <td class="p-3 text-center">
+                <input type="number" value="${user.weight}" step="0.1" min="0.5" max="2.0"
+                       onchange="updateUser(${user.id}, 'weight', this.value)"
+                       class="w-20 p-2 border rounded text-center text-blue-600 font-semibold bg-white text-sm">
+            </td>
+            <td class="p-3 text-center">
+                <span class="font-semibold ${index === salesTeam.length - 1 ? 'text-red-600' : 'text-blue-600'}">
+                    ${percentages[index]?.toFixed(1) || 0}%
+                </span>
+                ${index === salesTeam.length - 1 ? '<div class="text-xs text-red-500">(自动调整)</div>' : ''}
+            </td>
+            <td class="p-3 text-center">
+                <button onclick="removeUser(${user.id})" 
+                        class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 font-bold" 
+                        title="删除">
+                    ×
+                </button>
+            </td>
+        </tr>
+    `).join('');
+    
+    // 添加员工卡片
+    renderStaffCards();
+}
+
+// 渲染员工卡片
+function renderStaffCards() {
+    const existingCards = document.querySelectorAll('.staff-card');
+    existingCards.forEach(card => card.remove());
+    
+    salesTeam.forEach(user => {
+        const card = document.createElement('div');
+        card.id = `staff-card-${user.id}`;
+        card.className = 'staff-card';
+        card.style.transform = 'none'; // 确保没有默认的transform
+        card.innerHTML = `
+            <div class="flex items-start gap-3 mb-3">
+                <div class="avatar">
+                    ${user.name.charAt(0)}
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg text-gray-900">${user.name}</h3>
+                    <p class="text-sm text-gray-500">${user.department} · ${user.level}级</p>
+                </div>
+            </div>
+            
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">本月业绩：</span>
+                    <span class="font-semibold text-green-600">${user.monthlyPerformance}万</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">本月已成交：</span>
+                    <span class="font-semibold text-blue-600">${user.monthlyDeals}单</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">本月新分线索：</span>
+                    <span class="font-semibold text-purple-600">${user.monthlyLeads}条</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">动态转化率：</span>
+                    <span class="font-semibold text-orange-600">${user.conversionRate}%</span>
+                </div>
+                <div class="pt-2 border-t">
+                    <div class="text-gray-600 text-xs mb-1">所在分配组：</div>
+                    <div class="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium leading-relaxed">
+                        ${user.assignGroup}
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(card);
+    });
+}
+
+// 渲染状态面板
+function renderStatus() {
+    const tbody = document.getElementById('status-panel');
+    
+    // 获取排序后的团队数据
+    let sortedTeam = [...salesTeam];
+    
+    if (statusSortConfig.column && statusSortConfig.direction) {
+        sortedTeam.sort((a, b) => {
+            let valueA = a[statusSortConfig.column];
+            let valueB = b[statusSortConfig.column];
+            
+            // 特殊处理部门排序
+            if (statusSortConfig.column === 'department') {
+                const departmentOrder = { '一部': 1, '二部': 2, '三部': 3 };
+                valueA = departmentOrder[valueA] || 999;
+                valueB = departmentOrder[valueB] || 999;
+            }
+            // 特殊处理权重排序
+            else if (statusSortConfig.column === 'weight') {
+                valueA = parseFloat(valueA);
+                valueB = parseFloat(valueB);
+            }
+            
+            if (valueA < valueB) {
+                return statusSortConfig.direction === 'asc' ? -1 : 1;
+            }
+            if (valueA > valueB) {
+                return statusSortConfig.direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+    }
+    
+    // 计算汇总数据
+    const totalWeight = salesTeam.reduce((sum, user) => sum + user.weight, 0);
+    const totalCurrentWeight = salesTeam.reduce((sum, user) => sum + user.currentWeight, 0);
+    const totalLeadCount = salesTeam.reduce((sum, user) => sum + user.leadCount, 0);
+    const userCount = salesTeam.length;
+    
+    const userRows = sortedTeam.map(user => {
+        const isLastAssigned = logs.length > 0 && logs[0].userId === user.id;
+        const weightPercentage = totalWeight > 0 ? (user.weight / totalWeight * 100).toFixed(1) : '0.0';
+        const currentWeightPercentage = totalWeight > 0 ? (user.currentWeight / totalWeight * 100).toFixed(1) : '0.0';
+        
+        return `
+            <tr class="border-b ${isLastAssigned ? 'highlight bg-yellow-50' : 'hover:bg-gray-50'}">
+                <td class="p-3 font-medium text-gray-900">
+                    <span class="staff-name-hover"
+                          onmouseenter="showStaffCard(event, ${JSON.stringify(user).replace(/"/g, '&quot;')})"
+                          onmouseleave="hideStaffCard(${JSON.stringify(user).replace(/"/g, '&quot;')})">
+                        ${user.name}
+                    </span>
+                </td>
+                <td class="p-3 text-center text-orange-600 font-semibold">${user.department}</td>
+                <td class="p-3 text-center text-purple-600 font-semibold">${user.level}</td>
+                <td class="p-3 text-center text-blue-600 font-semibold text-sm">${user.weight} (${weightPercentage}%)</td>
+                <td class="p-3 text-center font-mono text-sm ${user.currentWeight >= 0 ? 'text-green-600' : 'text-red-600'}">${user.currentWeight.toFixed(1)} (${currentWeightPercentage}%)</td>
+                <td class="p-3 text-center font-bold text-blue-700">${user.leadCount}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    // 汇总行
+    const summaryRow = `
+        <tr class="border-t-2 border-gray-400 bg-blue-50 font-semibold">
+            <td class="p-3 font-bold text-gray-900">汇总 (${userCount}人)</td>
+            <td class="p-3 text-center text-gray-600">-</td>
+            <td class="p-3 text-center text-gray-600">-</td>
+            <td class="p-3 text-center font-bold text-blue-700 text-sm">${totalWeight.toFixed(1)} (100%)</td>
+            <td class="p-3 text-center font-bold font-mono text-sm ${totalCurrentWeight >= 0 ? 'text-green-700' : 'text-red-700'}">${totalCurrentWeight.toFixed(1)} (100%)</td>
+            <td class="p-3 text-center font-bold text-blue-700">${totalLeadCount}</td>
+        </tr>
+    `;
+    
+    tbody.innerHTML = userRows + summaryRow;
+}
+
+// 渲染日志
+function renderLogs() {
+    const panel = document.getElementById('log-panel');
+    
+    if (logs.length === 0) {
+        panel.innerHTML = '<p class="text-gray-500 text-center">暂无分配记录</p>';
+        return;
+    }
+    
+    panel.innerHTML = logs.map(log => `
+        <div class="mb-2 p-2 bg-white rounded border-l-4 border-blue-500">
+            <span class="font-medium">线索 #${log.id}</span> → 
+            <span class="text-blue-600 font-semibold">${log.assignee}</span>
+            <span class="text-gray-400 text-sm float-right">${log.timestamp}</span>
+        </div>
+    `).join('');
+    
+    panel.scrollTop = 0;
+}
+
+// 表格排序功能
+function sortTable(column) {
+    // 如果点击的是当前排序列，则切换排序方向
+    if (sortConfig.column === column) {
+        if (sortConfig.direction === 'asc') {
+            sortConfig.direction = 'desc';
+        } else if (sortConfig.direction === 'desc') {
+            sortConfig.direction = null;
+            sortConfig.column = null;
+        } else {
+            sortConfig.direction = 'asc';
+        }
+    } else {
+        // 如果点击的是新列，则设置为升序
+        sortConfig.column = column;
+        sortConfig.direction = 'asc';
+    }
+    
+    // 应用排序
+    let sortedTeam = [...salesTeam];
+    
+    if (sortConfig.column && sortConfig.direction) {
+        sortedTeam.sort((a, b) => {
+            let valueA = a[sortConfig.column];
+            let valueB = b[sortConfig.column];
+            
+            // 特殊处理部门排序
+            if (sortConfig.column === 'department') {
+                const departmentOrder = { '一部': 1, '二部': 2, '三部': 3 };
+                valueA = departmentOrder[valueA] || 999;
+                valueB = departmentOrder[valueB] || 999;
+            } else if (sortConfig.column === 'level') {
+                // 特殊处理职级排序
+                const levelOrder = { 'L1': 1, 'L2': 2, 'L3': 3 };
+                valueA = levelOrder[valueA] || 999;
+                valueB = levelOrder[valueB] || 999;
+            } else if (typeof valueA === 'string') {
+                // 处理其他字符串类型的排序
+                valueA = valueA.toLowerCase();
+                valueB = valueB.toLowerCase();
+            }
+            
+            if (valueA < valueB) {
+                return sortConfig.direction === 'asc' ? -1 : 1;
+            }
+            if (valueA > valueB) {
+                return sortConfig.direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+    } else {
+        // 如果没有排序配置，则按ID排序（默认顺序）
+        sortedTeam.sort((a, b) => a.id - b.id);
+    }
+    
+    salesTeam = sortedTeam;
+    updateSortIndicators();
+    renderAll();
+}
+
+// 分配状态表格排序功能
+function sortStatusTable(column) {
+    // 如果点击的是当前排序列，则切换排序方向
+    if (statusSortConfig.column === column) {
+        if (statusSortConfig.direction === 'asc') {
+            statusSortConfig.direction = 'desc';
+        } else if (statusSortConfig.direction === 'desc') {
+            statusSortConfig.direction = null;
+            statusSortConfig.column = null;
+        } else {
+            statusSortConfig.direction = 'asc';
+        }
+    } else {
+        // 如果点击的是新列，则设置为升序
+        statusSortConfig.column = column;
+        statusSortConfig.direction = 'asc';
+    }
+    
+    updateStatusSortIndicators();
+    renderStatus();
+}
+
+// 更新左侧团队配置排序指示器
+function updateSortIndicators() {
+    const indicators = ['name', 'department', 'level', 'weight'];
+    
+    indicators.forEach(indicator => {
+        const element = document.getElementById(`sort-${indicator}`);
+        if (element) {
+            if (sortConfig.column === indicator) {
+                if (sortConfig.direction === 'asc') {
+                    element.textContent = '↑';
+                    element.style.color = '#3b82f6';
+                } else if (sortConfig.direction === 'desc') {
+                    element.textContent = '↓';
+                    element.style.color = '#3b82f6';
+                }
+            } else {
+                element.textContent = '⇅';
+                element.style.color = '#9ca3af';
+            }
+        }
+    });
+}
+
+// 更新右侧分配状态排序指示器
+function updateStatusSortIndicators() {
+    const indicators = ['department', 'weight', 'leadCount'];
+    
+    indicators.forEach(indicator => {
+        const element = document.getElementById(`status-sort-${indicator}`);
+        if (element) {
+            if (statusSortConfig.column === indicator) {
+                if (statusSortConfig.direction === 'asc') {
+                    element.textContent = '↑';
+                    element.style.color = '#3b82f6';
+                } else if (statusSortConfig.direction === 'desc') {
+                    element.textContent = '↓';
+                    element.style.color = '#3b82f6';
+                }
+            } else {
+                element.textContent = '⇅';
+                element.style.color = '#9ca3af';
+            }
+        }
+    });
+}
+
+// 渲染所有组件
+function renderAll() {
+    renderTeamTable();
+    renderStatus();
+    renderLogs();
+    updateSortIndicators();
+    updateStatusSortIndicators();
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    initializeSalesTeam(); // 初始化销售团队数据
+    document.getElementById('add-user').addEventListener('click', addUser);
+    renderAll();
+});
+
+// 点击页面其他地方隐藏所有卡片
+document.addEventListener('click', (event) => {
+    if (!event.target.closest('.staff-name-hover') && !event.target.closest('.staff-card')) {
+        document.querySelectorAll('.staff-card').forEach(card => {
+            card.classList.remove('show');
+        });
+    }
+});
+</script>
+
+</body>
+</html> 

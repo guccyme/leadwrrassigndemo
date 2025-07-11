@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平滑加权轮询线索分配模拟器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Helvetica Neue', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+        .highlight {
+            animation: highlight-animation 1.5s ease-out;
+        }
+        @keyframes highlight-animation {
+            0% { background-color: #fef9c3; transform: scale(1); }
+            20% { background-color: #fef9c3; transform: scale(1.02); }
+            100% { background-color: transparent; transform: scale(1); }
+        }
+        .log-item-enter {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .log-item-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">平滑加权轮询 (Smooth WRR) 线索分配模拟器</h1>
+            <p class="mt-2 text-md text-gray-600">直观演示在流式进线场景下，如何实现公平且平滑的线索分配</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- 左侧：配置与控制 -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- 控制面板 -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">模拟控制</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="assign-one-btn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-sm">分配 1 条</button>
+                        <button id="assign-ten-btn" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 shadow-sm">分配 10 条</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-3">
+                        <button id="assign-50-btn" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-sm">分配 50 条</button>
+                        <button id="assign-100-btn" class="w-full bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-600 transition duration-300 shadow-sm">分配 100 条</button>
+                        <button id="assign-200-btn" class="w-full bg-purple-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-300 shadow-sm">分配 200 条</button>
+                        <button id="assign-300-btn" class="w-full bg-purple-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-600 transition duration-300 shadow-sm">分配 300 条</button>
+                    </div>
+                    <button id="reset-btn" class="mt-3 w-full bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300 shadow-sm">重置模拟</button>
+                </div>
+
+                <!-- 销售团队配置 -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h2 class="text-xl font-semibold">销售团队配置</h2>
+                        <button id="add-user-btn" class="bg-green-500 text-white text-sm font-bold py-1 px-3 rounded-full hover:bg-green-600 transition duration-300 shadow-sm">+ 新增</button>
+                    </div>
+                    <div id="user-config-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                        <!-- 用户配置项将通过JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：状态与日志 -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- 实时状态 -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">销售团队实时状态</h2>
+                    <div class="flex text-xs text-gray-500 font-semibold px-4 mb-2">
+                        <div class="w-2/12">销售</div>
+                        <div class="w-2/12 text-center">固定权重</div>
+                        <div class="w-2/12 text-center">动态权重</div>
+                        <div class="w-2/12 text-center">已获线索</div>
+                        <div class="w-4/12 text-center">线索占比</div>
+                    </div>
+                    <div id="user-status-list" class="space-y-2">
+                        <!-- 用户状态将通过JS动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 分配日志 -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">分配日志</h2>
+                    <div id="log-container" class="h-64 overflow-y-auto space-y-2 pr-2">
+                        <!-- 日志条目将通过JS动态生成 -->
+                         <p id="log-placeholder" class="text-center text-gray-400 mt-8">暂无分配记录，请点击左侧按钮开始模拟。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = {
+                // DOM 元素
+                elements: {
+                    userConfigList: document.getElementById('user-config-list'),
+                    userStatusList: document.getElementById('user-status-list'),
+                    logContainer: document.getElementById('log-container'),
+                    logPlaceholder: document.getElementById('log-placeholder'),
+                    addUserBtn: document.getElementById('add-user-btn'),
+                    assignOneBtn: document.getElementById('assign-one-btn'),
+                    assignTenBtn: document.getElementById('assign-ten-btn'),
+                    assign50Btn: document.getElementById('assign-50-btn'),
+                    assign100Btn: document.getElementById('assign-100-btn'),
+                    assign200Btn: document.getElementById('assign-200-btn'),
+                    assign300Btn: document.getElementById('assign-300-btn'),
+                    resetBtn: document.getElementById('reset-btn'),
+                },
+
+                // 状态
+                state: {
+                    salesTeam: [],
+                    leadCounter: 0,
+                    log: [],
+                },
+
+                // 初始化
+                init() {
+                    this.bindEvents();
+                    this.loadInitialData();
+                    this.render();
+                },
+
+                // 绑定事件
+                bindEvents() {
+                    this.elements.addUserBtn.addEventListener('click', () => this.addUser());
+                    this.elements.assignOneBtn.addEventListener('click', () => this.runSimulation(1));
+                    this.elements.assignTenBtn.addEventListener('click', () => this.runSimulation(10));
+                    this.elements.assign50Btn.addEventListener('click', () => this.runSimulation(50));
+                    this.elements.assign100Btn.addEventListener('click', () => this.runSimulation(100));
+                    this.elements.assign200Btn.addEventListener('click', () => this.runSimulation(200));
+                    this.elements.assign300Btn.addEventListener('click', () => this.runSimulation(300));
+                    this.elements.resetBtn.addEventListener('click', () => this.reset());
+                    
+                    // 事件委托处理用户配置的变更
+                    this.elements.userConfigList.addEventListener('input', (e) => {
+                        if (e.target.dataset.field === 'name') {
+                            this.updateUser(e.target.dataset.id, 'name', e.target.value);
+                        }
+                        if (e.target.dataset.field === 'weight') {
+                            const weight = parseInt(e.target.value, 10);
+                            if (!isNaN(weight) && weight >= 0) {
+                                this.updateUser(e.target.dataset.id, 'staticWeight', weight);
+                            }
+                        }
+                    });
+
+                    this.elements.userConfigList.addEventListener('click', (e) => {
+                        if (e.target.closest('.remove-user-btn')) {
+                            this.removeUser(e.target.closest('.remove-user-btn').dataset.id);
+                        }
+                    });
+                },
+
+                // 加载初始数据
+                loadInitialData() {
+                    this.state.salesTeam = [
+                        // 权重 15%
+                        { id: crypto.randomUUID(), name: 'A1-高权重', staticWeight: 15, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'A2-高权重', staticWeight: 15, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'A3-高权重', staticWeight: 15, currentWeight: 0, leadCount: 0 },
+                        // 权重 10%
+                        { id: crypto.randomUUID(), name: 'B1-中权重', staticWeight: 10, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'B2-中权重', staticWeight: 10, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'B3-中权重', staticWeight: 10, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'B4-中权重', staticWeight: 10, currentWeight: 0, leadCount: 0 },
+                        // 权重 5%
+                        { id: crypto.randomUUID(), name: 'C1-低权重', staticWeight: 5, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'C2-低权重', staticWeight: 5, currentWeight: 0, leadCount: 0 },
+                        { id: crypto.randomUUID(), name: 'C3-低权重', staticWeight: 5, currentWeight: 0, leadCount: 0 },
+                    ];
+                },
+
+                // 核心算法：分配一条线索
+                assignSingleLead() {
+                    if (this.state.salesTeam.length === 0) {
+                        this.logMessage('团队中没有销售人员，无法分配。');
+                        return;
+                    }
+
+                    let totalStaticWeight = 0;
+                    let bestCandidate = null;
+
+                    // 1. 遍历所有用户，更新其动态权重，并计算总权重
+                    this.state.salesTeam.forEach(user => {
+                        user.currentWeight += user.staticWeight;
+                        totalStaticWeight += user.staticWeight;
+                        
+                        // 2. 找到动态权重最高的用户
+                        if (bestCandidate === null || user.currentWeight > bestCandidate.currentWeight) {
+                            bestCandidate = user;
+                        }
+                    });
+                    
+                    if (totalStaticWeight === 0) {
+                        this.logMessage('所有销售的权重均为0，无法按权重分配。将分配给第一个人。');
+                        bestCandidate = this.state.salesTeam[0];
+                    }
+
+                    // 3. 更新被选中用户的动态权重
+                    bestCandidate.currentWeight -= totalStaticWeight;
+                    
+                    // 4. 更新线索计数
+                    bestCandidate.leadCount++;
+                    this.state.leadCounter++;
+
+                    // 5. 记录日志
+                    this.logMessage(`线索 #${this.state.leadCounter} -> ${bestCandidate.name}`, bestCandidate.id);
+                },
+
+                // 运行模拟
+                runSimulation(count) {
+                    for (let i = 0; i < count; i++) {
+                        this.assignSingleLead();
+                    }
+                    this.render();
+                },
+
+                // 增删改查
+                addUser() {
+                    const id = crypto.randomUUID();
+                    const newUser = {
+                        id,
+                        name: `新销售-${this.state.salesTeam.length + 1}`,
+                        staticWeight: 10,
+                        currentWeight: 0,
+                        leadCount: 0
+                    };
+                    this.state.salesTeam.push(newUser);
+                    this.render();
+                },
+                removeUser(id) {
+                    this.state.salesTeam = this.state.salesTeam.filter(user => user.id !== id);
+                    this.render();
+                },
+                updateUser(id, field, value) {
+                    const user = this.state.salesTeam.find(u => u.id === id);
+                    if (user) {
+                        user[field] = value;
+                        this.renderStatus(); // 只更新状态，避免重绘输入框导致焦点丢失
+                    }
+                },
+                reset() {
+                    this.state.leadCounter = 0;
+                    this.state.log = [];
+                    this.state.salesTeam.forEach(user => {
+                        user.currentWeight = 0;
+                        user.leadCount = 0;
+                    });
+                    this.render();
+                },
+                logMessage(message, highlightId = null) {
+                    this.state.log.unshift({ message, highlightId, timestamp: new Date() });
+                    if (this.state.log.length > 100) { // 保持日志长度
+                        this.state.log.pop();
+                    }
+                },
+
+                // 渲染方法
+                render() {
+                    this.renderConfig();
+                    this.renderStatus();
+                    this.renderLog();
+                },
+                renderConfig() {
+                    this.elements.userConfigList.innerHTML = this.state.salesTeam.map(user => `
+                        <div class="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
+                            <input type="text" value="${user.name}" data-id="${user.id}" data-field="name" class="flex-grow p-1 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <input type="number" value="${user.staticWeight}" data-id="${user.id}" data-field="weight" class="w-20 p-1 border rounded-md text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <button data-id="${user.id}" class="remove-user-btn p-1 text-gray-400 hover:text-red-500 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
+                    `).join('');
+                },
+                renderStatus() {
+                    const totalLeads = this.state.leadCounter;
+                    this.elements.userStatusList.innerHTML = this.state.salesTeam.map(user => {
+                        const percentage = totalLeads > 0 ? (user.leadCount / totalLeads) * 100 : 0;
+                        const lastAssigned = this.state.log.length > 0 && this.state.log[0].highlightId === user.id;
+                        return `
+                        <div id="status-${user.id}" class="p-2 rounded-lg ${lastAssigned ? 'highlight' : ''}">
+                            <div class="flex items-center">
+                                <div class="w-2/12 font-medium truncate pr-2">${user.name}</div>
+                                <div class="w-2/12 text-center text-gray-600">${user.staticWeight}</div>
+                                <div class="w-2/12 text-center font-mono font-semibold ${user.currentWeight >= 0 ? 'text-green-600' : 'text-red-600'}">${user.currentWeight}</div>
+                                <div class="w-2/12 text-center font-bold text-blue-700">${user.leadCount}</div>
+                                <div class="w-4/12 flex items-center">
+                                    <div class="w-full bg-gray-200 rounded-full h-4">
+                                        <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-4 rounded-full text-white text-xs flex items-center justify-center" style="width: ${percentage.toFixed(2)}%;">
+                                            ${percentage > 10 ? percentage.toFixed(0) + '%' : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                },
+                renderLog() {
+                    if (this.state.log.length === 0) {
+                        this.elements.logPlaceholder.style.display = 'block';
+                        this.elements.logContainer.innerHTML = '';
+                        this.elements.logContainer.appendChild(this.elements.logPlaceholder);
+                        return;
+                    }
+                    
+                    this.elements.logPlaceholder.style.display = 'none';
+                    this.elements.logContainer.innerHTML = this.state.log.map(entry => `
+                        <div class="log-item-enter bg-gray-50 p-2 rounded-md flex justify-between items-center text-sm">
+                            <span>${entry.message}</span>
+                            <span class="text-gray-400 text-xs">${entry.timestamp.toLocaleTimeString()}</span>
+                        </div>
+                    `).join('');
+                    
+                    // 触发动画
+                    const firstLogItem = this.elements.logContainer.querySelector('.log-item-enter');
+                    if(firstLogItem) {
+                        requestAnimationFrame(() => {
+                            firstLogItem.classList.add('log-item-enter-active');
+                        });
+                    }
+                },
+            };
+
+            app.init();
+        });
+    </script>
+
+</body>
+</html>

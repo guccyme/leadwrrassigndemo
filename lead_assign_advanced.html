@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM线索分配算法对比分析系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        .algorithm-card { transition: all 0.3s ease; }
+        .algorithm-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .active-algorithm { border: 2px solid #3b82f6; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<div class="max-w-7xl mx-auto p-6">
+    <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">CRM线索分配算法对比分析系统</h1>
+        <p class="text-gray-600">多算法实时对比 · 性能分析 · 最优策略推荐</p>
+    </header>
+
+    <!-- 算法选择器 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="algorithm-card bg-white p-6 rounded-xl shadow-md cursor-pointer" data-algorithm="smooth-wrr">
+            <h3 class="text-lg font-semibold mb-2">平滑加权轮询</h3>
+            <p class="text-sm text-gray-600 mb-3">经典的负载均衡算法，分配平滑</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">推荐指数: ★★★★☆</span>
+                <input type="radio" name="algorithm" value="smooth-wrr" checked class="text-blue-600">
+            </div>
+        </div>
+
+        <div class="algorithm-card bg-white p-6 rounded-xl shadow-md cursor-pointer" data-algorithm="fair-queue">
+            <h3 class="text-lg font-semibold mb-2">公平队列算法</h3>
+            <p class="text-sm text-gray-600 mb-3">保证严格按比例分配，适合高要求场景</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">推荐指数: ★★★★★</span>
+                <input type="radio" name="algorithm" value="fair-queue" class="text-blue-600">
+            </div>
+        </div>
+
+        <div class="algorithm-card bg-white p-6 rounded-xl shadow-md cursor-pointer" data-algorithm="adaptive-weight">
+            <h3 class="text-lg font-semibold mb-2">自适应权重算法</h3>
+            <p class="text-sm text-gray-600 mb-3">基于历史表现动态调整权重</p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">推荐指数: ★★★★★</span>
+                <input type="radio" name="algorithm" value="adaptive-weight" class="text-blue-600">
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 左侧：团队配置 -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold mb-4">销售团队配置</h2>
+                <div id="team-config" class="space-y-3">
+                    <!-- 动态生成 -->
+                </div>
+                <button onclick="addMember()" class="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
+                    + 添加销售
+                </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold mb-4">性能参数设置</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">转化率影响权重</label>
+                        <input type="range" id="conversion-factor" min="0" max="1" step="0.1" value="0.3" 
+                               class="w-full" onchange="updateSettings()">
+                        <span class="text-xs text-gray-500">当前值: <span id="conversion-value">30%</span></span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">响应时间影响权重</label>
+                        <input type="range" id="response-factor" min="0" max="1" step="0.1" value="0.2" 
+                               class="w-full" onchange="updateSettings()">
+                        <span class="text-xs text-gray-500">当前值: <span id="response-value">20%</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold mb-4">模拟控制</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="simulate(10)" class="bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">10条</button>
+                    <button onclick="simulate(50)" class="bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">50条</button>
+                    <button onclick="simulate(100)" class="bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600">100条</button>
+                    <button onclick="simulate(500)" class="bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600">500条</button>
+                </div>
+                <button onclick="runComparison()" class="mt-3 w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+                    算法对比分析
+                </button>
+                <button onclick="reset()" class="mt-2 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600">
+                    重置
+                </button>
+            </div>
+        </div>
+
+        <!-- 中间：实时状态 -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold mb-4">实时分配状态</h2>
+                <div id="status-display" class="space-y-3">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold mb-4">算法性能指标</h2>
+                <div id="performance-metrics" class="grid grid-cols-2 gap-4">
+                    <div class="text-center p-3 bg-blue-50 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600" id="fairness-score">95.2</div>
+                        <div class="text-sm text-gray-600">公平性得分</div>
+                    </div>
+                    <div class="text-center p-3 bg-green-50 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600" id="efficiency-score">98.7</div>
+                        <div class="text-sm text-gray-600">效率得分</div>
+                    </div>
+                    <div class="text-center p-3 bg-purple-50 rounded-lg">
+                        <div class="text-2xl font-bold text-purple-600" id="variance-score">2.3</div>
+                        <div class="text-sm text-gray-600">方差系数</div>
+                    </div>
+                    <div class="text-center p-3 bg-orange-50 rounded-lg">
+                        <div class="text-2xl font-bold text-orange-600" id="adaptation-score">87.5</div>
+                        <div class="text-sm text-gray-600">适应性得分</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：分析图表 -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold mb-4">分配趋势图</h2>
+                <canvas id="distribution-chart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-semibold mb-4">算法对比结果</h2>
+                <div id="comparison-results" class="text-sm text-gray-600">
+                    点击"算法对比分析"查看详细对比结果
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 全局状态
+let salesTeam = [
+    { id: 1, name: '张三', baseWeight: 1.5, currentWeight: 0, leadCount: 0, conversionRate: 0.25, avgResponseTime: 120 },
+    { id: 2, name: '李四', baseWeight: 1.2, currentWeight: 0, leadCount: 0, conversionRate: 0.22, avgResponseTime: 150 },
+    { id: 3, name: '王五', baseWeight: 1.0, currentWeight: 0, leadCount: 0, conversionRate: 0.18, avgResponseTime: 180 },
+    { id: 4, name: '赵六', baseWeight: 0.9, currentWeight: 0, leadCount: 0, conversionRate: 0.20, avgResponseTime: 200 },
+    { id: 5, name: '钱七', baseWeight: 0.8, currentWeight: 0, leadCount: 0, conversionRate: 0.15, avgResponseTime: 240 }
+];
+
+let currentAlgorithm = 'smooth-wrr';
+let leadCounter = 0;
+let distributionHistory = [];
+let settings = { conversionFactor: 0.3, responseFactor: 0.2 };
+
+// 算法实现
+const algorithms = {
+    // 1. 平滑加权轮询算法
+    'smooth-wrr': (team) => {
+        let bestCandidate = null;
+        let totalWeight = 0;
+        
+        team.forEach(member => {
+            const dynamicWeight = calculateDynamicWeight(member);
+            member.currentWeight += dynamicWeight;
+            totalWeight += dynamicWeight;
+            
+            if (!bestCandidate || member.currentWeight > bestCandidate.currentWeight) {
+                bestCandidate = member;
+            }
+        });
+        
+        if (bestCandidate) {
+            bestCandidate.currentWeight -= totalWeight;
+        }
+        
+        return bestCandidate;
+    },
+
+    // 2. 公平队列算法 (Fair Queuing)
+    'fair-queue': (team) => {
+        const totalWeight = team.reduce((sum, member) => sum + calculateDynamicWeight(member), 0);
+        let bestCandidate = null;
+        let minRatio = Infinity;
+        
+        team.forEach(member => {
+            const expectedRatio = calculateDynamicWeight(member) / totalWeight;
+            const actualRatio = leadCounter > 0 ? member.leadCount / leadCounter : 0;
+            const deficit = expectedRatio - actualRatio;
+            
+            if (deficit > minRatio || bestCandidate === null) {
+                minRatio = deficit;
+                bestCandidate = member;
+            }
+        });
+        
+        return bestCandidate;
+    },
+
+    // 3. 自适应权重算法
+    'adaptive-weight': (team) => {
+        let bestCandidate = null;
+        let maxScore = -1;
+        
+        team.forEach(member => {
+            const dynamicWeight = calculateDynamicWeight(member);
+            const performanceBonus = member.conversionRate * settings.conversionFactor;
+            const responseBonus = (300 - member.avgResponseTime) / 300 * settings.responseFactor;
+            const adaptiveScore = dynamicWeight + performanceBonus + responseBonus;
+            
+            member.currentWeight += adaptiveScore;
+            
+            if (member.currentWeight > maxScore) {
+                maxScore = member.currentWeight;
+                bestCandidate = member;
+            }
+        });
+        
+        if (bestCandidate) {
+            const totalAdaptiveWeight = team.reduce((sum, m) => sum + calculateDynamicWeight(m), 0);
+            bestCandidate.currentWeight -= totalAdaptiveWeight;
+        }
+        
+        return bestCandidate;
+    }
+};
+
+// 计算动态权重
+function calculateDynamicWeight(member) {
+    let weight = member.baseWeight;
+    
+    // 基于转化率调整
+    const conversionBonus = (member.conversionRate - 0.2) * settings.conversionFactor;
+    
+    // 基于响应时间调整
+    const responseBonus = (200 - member.avgResponseTime) / 200 * settings.responseFactor;
+    
+    return Math.max(0.1, weight + conversionBonus + responseBonus);
+}
+
+// 分配线索
+function assignLead() {
+    const algorithm = algorithms[currentAlgorithm];
+    const selected = algorithm(salesTeam);
+    
+    if (selected) {
+        selected.leadCount++;
+        leadCounter++;
+        
+        // 模拟性能变化
+        if (Math.random() < 0.1) {
+            selected.conversionRate += (Math.random() - 0.5) * 0.02;
+            selected.conversionRate = Math.max(0.05, Math.min(0.4, selected.conversionRate));
+        }
+        
+        recordDistribution();
+    }
+    
+    return selected;
+}
+
+// 记录分配历史
+function recordDistribution() {
+    const distribution = salesTeam.map(member => ({
+        name: member.name,
+        count: member.leadCount,
+        percentage: leadCounter > 0 ? (member.leadCount / leadCounter) * 100 : 0
+    }));
+    
+    distributionHistory.push({
+        leadNumber: leadCounter,
+        distribution: distribution,
+        algorithm: currentAlgorithm,
+        timestamp: new Date()
+    });
+    
+    if (distributionHistory.length > 100) {
+        distributionHistory.shift();
+    }
+}
+
+// 模拟分配
+function simulate(count) {
+    for (let i = 0; i < count; i++) {
+        assignLead();
+    }
+    updateDisplay();
+}
+
+// 算法对比分析
+function runComparison() {
+    const originalTeam = JSON.parse(JSON.stringify(salesTeam));
+    const results = {};
+    
+    ['smooth-wrr', 'fair-queue', 'adaptive-weight'].forEach(algorithm => {
+        // 重置团队状态
+        salesTeam = JSON.parse(JSON.stringify(originalTeam));
+        salesTeam.forEach(member => {
+            member.currentWeight = 0;
+            member.leadCount = 0;
+        });
+        
+        currentAlgorithm = algorithm;
+        leadCounter = 0;
+        
+        // 运行100次分配
+        for (let i = 0; i < 100; i++) {
+            assignLead();
+        }
+        
+        // 计算指标
+        const fairness = calculateFairness();
+        const efficiency = calculateEfficiency();
+        const variance = calculateVariance();
+        
+        results[algorithm] = { fairness, efficiency, variance };
+    });
+    
+    displayComparisonResults(results);
+    
+    // 恢复原始状态
+    salesTeam = originalTeam;
+    currentAlgorithm = 'smooth-wrr';
+    updateDisplay();
+}
+
+// 计算公平性指标
+function calculateFairness() {
+    const totalWeight = salesTeam.reduce((sum, member) => sum + member.baseWeight, 0);
+    let fairnessScore = 0;
+    
+    salesTeam.forEach(member => {
+        const expectedPercentage = (member.baseWeight / totalWeight) * 100;
+        const actualPercentage = leadCounter > 0 ? (member.leadCount / leadCounter) * 100 : 0;
+        const deviation = Math.abs(expectedPercentage - actualPercentage);
+        fairnessScore += deviation;
+    });
+    
+    return Math.max(0, 100 - fairnessScore);
+}
+
+// 计算效率指标
+function calculateEfficiency() {
+    const avgConversion = salesTeam.reduce((sum, member) => 
+        sum + (member.conversionRate * member.leadCount), 0) / leadCounter;
+    return Math.min(100, avgConversion * 500);
+}
+
+// 计算方差系数
+function calculateVariance() {
+    const mean = leadCounter / salesTeam.length;
+    const variance = salesTeam.reduce((sum, member) => 
+        sum + Math.pow(member.leadCount - mean, 2), 0) / salesTeam.length;
+    return Math.sqrt(variance);
+}
+
+// 显示对比结果
+function displayComparisonResults(results) {
+    let html = '<div class="space-y-3">';
+    
+    Object.entries(results).forEach(([algorithm, metrics]) => {
+        const algName = {
+            'smooth-wrr': '平滑加权轮询',
+            'fair-queue': '公平队列算法',
+            'adaptive-weight': '自适应权重算法'
+        }[algorithm];
+        
+        html += `
+            <div class="p-3 border rounded-lg">
+                <h4 class="font-semibold mb-2">${algName}</h4>
+                <div class="grid grid-cols-3 gap-2 text-sm">
+                    <div>公平性: ${metrics.fairness.toFixed(1)}</div>
+                    <div>效率: ${metrics.efficiency.toFixed(1)}</div>
+                    <div>方差: ${metrics.variance.toFixed(1)}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    document.getElementById('comparison-results').innerHTML = html;
+}
+
+// 重置系统
+function reset() {
+    salesTeam.forEach(member => {
+        member.currentWeight = 0;
+        member.leadCount = 0;
+    });
+    leadCounter = 0;
+    distributionHistory = [];
+    updateDisplay();
+}
+
+// 更新设置
+function updateSettings() {
+    settings.conversionFactor = parseFloat(document.getElementById('conversion-factor').value);
+    settings.responseFactor = parseFloat(document.getElementById('response-factor').value);
+    
+    document.getElementById('conversion-value').textContent = (settings.conversionFactor * 100).toFixed(0) + '%';
+    document.getElementById('response-value').textContent = (settings.responseFactor * 100).toFixed(0) + '%';
+}
+
+// 更新显示
+function updateDisplay() {
+    renderTeamConfig();
+    renderStatus();
+    updateMetrics();
+    updateChart();
+}
+
+// 渲染团队配置
+function renderTeamConfig() {
+    const container = document.getElementById('team-config');
+    container.innerHTML = salesTeam.map(member => `
+        <div class="p-3 border rounded-lg bg-gray-50">
+            <div class="flex justify-between items-center mb-2">
+                <input type="text" value="${member.name}" class="font-medium bg-transparent border-none p-1 rounded">
+                <button onclick="removeMember(${member.id})" class="text-red-500 text-sm">删除</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                    <label class="block text-xs text-gray-600">基础权重</label>
+                    <input type="number" value="${member.baseWeight}" step="0.1" min="0.5" max="2.0" 
+                           onchange="updateMember(${member.id}, 'baseWeight', this.value)"
+                           class="w-full p-1 border rounded text-center">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600">转化率</label>
+                    <span class="block p-1 text-center bg-white border rounded">
+                        ${(member.conversionRate * 100).toFixed(1)}%
+                    </span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 渲染状态显示
+function renderStatus() {
+    const container = document.getElementById('status-display');
+    const totalWeight = salesTeam.reduce((sum, member) => sum + member.baseWeight, 0);
+    
+    container.innerHTML = salesTeam.map(member => {
+        const expectedPercentage = (member.baseWeight / totalWeight) * 100;
+        const actualPercentage = leadCounter > 0 ? (member.leadCount / leadCounter) * 100 : 0;
+        const deviation = Math.abs(expectedPercentage - actualPercentage);
+        
+        return `
+            <div class="p-3 border rounded-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-medium">${member.name}</span>
+                    <span class="text-sm text-gray-500">${member.leadCount}条线索</span>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex justify-between text-xs">
+                        <span>期望比例: ${expectedPercentage.toFixed(1)}%</span>
+                        <span>实际比例: ${actualPercentage.toFixed(1)}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full" style="width: ${actualPercentage}%"></div>
+                    </div>
+                    <div class="text-xs ${deviation < 2 ? 'text-green-600' : deviation < 5 ? 'text-yellow-600' : 'text-red-600'}">
+                        偏差: ${deviation.toFixed(1)}%
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 更新性能指标
+function updateMetrics() {
+    if (leadCounter === 0) return;
+    
+    const fairness = calculateFairness();
+    const efficiency = calculateEfficiency();
+    const variance = calculateVariance();
+    const adaptation = 100 - Math.abs(variance - 2) * 10;
+    
+    document.getElementById('fairness-score').textContent = fairness.toFixed(1);
+    document.getElementById('efficiency-score').textContent = efficiency.toFixed(1);
+    document.getElementById('variance-score').textContent = variance.toFixed(1);
+    document.getElementById('adaptation-score').textContent = Math.max(0, adaptation).toFixed(1);
+}
+
+// 更新图表
+function updateChart() {
+    const ctx = document.getElementById('distribution-chart').getContext('2d');
+    
+    if (window.distributionChart) {
+        window.distributionChart.destroy();
+    }
+    
+    const labels = salesTeam.map(member => member.name);
+    const data = salesTeam.map(member => member.leadCount);
+    const expectedData = salesTeam.map(member => {
+        const totalWeight = salesTeam.reduce((sum, m) => sum + m.baseWeight, 0);
+        return leadCounter * (member.baseWeight / totalWeight);
+    });
+    
+    window.distributionChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '实际分配',
+                data: data,
+                backgroundColor: 'rgba(59, 130, 246, 0.8)'
+            }, {
+                label: '期望分配',
+                data: expectedData,
+                backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                type: 'line',
+                borderColor: 'rgba(239, 68, 68, 1)',
+                borderWidth: 2,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// 添加成员
+function addMember() {
+    const newId = Math.max(...salesTeam.map(m => m.id), 0) + 1;
+    salesTeam.push({
+        id: newId,
+        name: `销售${newId}`,
+        baseWeight: 1.0,
+        currentWeight: 0,
+        leadCount: 0,
+        conversionRate: 0.2,
+        avgResponseTime: 180
+    });
+    updateDisplay();
+}
+
+// 删除成员
+function removeMember(id) {
+    salesTeam = salesTeam.filter(member => member.id !== id);
+    updateDisplay();
+}
+
+// 更新成员信息
+function updateMember(id, field, value) {
+    const member = salesTeam.find(m => m.id === id);
+    if (member) {
+        member[field] = parseFloat(value);
+        updateDisplay();
+    }
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    // 算法选择事件
+    document.querySelectorAll('.algorithm-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.algorithm-card').forEach(c => c.classList.remove('active-algorithm'));
+            card.classList.add('active-algorithm');
+            
+            const radio = card.querySelector('input[type="radio"]');
+            radio.checked = true;
+            currentAlgorithm = radio.value;
+        });
+    });
+    
+    // 设置初始活动算法
+    document.querySelector('.algorithm-card').classList.add('active-algorithm');
+    
+    updateDisplay();
+});
+</script>
+
+</body>
+</html> 

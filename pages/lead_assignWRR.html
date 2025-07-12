@@ -71,7 +71,7 @@
     <div class="max-w-full mx-auto p-6">
     <header class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900">CRM线索分配系统 V2.0</h1>
-        <p class="text-gray-600 mt-2">智能权重管理 + 平滑加权轮询算法</p>
+        <p class="text-gray-600 mt-2">智能权重管理 + 平滑加权轮询算法 (共36人)</p>
     </header>
 
     <!-- 模拟控制器 - 移到页面上部 -->
@@ -93,17 +93,29 @@
             <div class="bg-white p-6 rounded-xl shadow-md">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold">销售团队配置</h2>
-                    <button id="add-user" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">+ 新增销售</button>
+                    <div class="flex items-center gap-4">
+                        <div class="flex bg-gray-100 rounded-lg p-1">
+                            <button id="flat-view-btn" onclick="switchView('flat')" 
+                                    class="px-3 py-1 rounded-md text-sm transition-all duration-200 bg-blue-500 text-white">
+                                平铺视图
+                            </button>
+                            <button id="group-view-btn" onclick="switchView('group')" 
+                                    class="px-3 py-1 rounded-md text-sm transition-all duration-200 text-gray-600 hover:bg-gray-200">
+                                分组视图
+                            </button>
+                        </div>
+                        <button id="add-user" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">+ 新增销售</button>
+                    </div>
                 </div>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-gray-50">
-                            <tr class="text-sm text-gray-600">
+                            <tr class="text-sm text-gray-600" id="team-table-header">
                                 <th class="p-3 text-left cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">
                                     姓名 <span id="sort-name" class="ml-1">⇅</span>
                                 </th>
-                                <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortTable('department')">
+                                <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortTable('department')" id="department-header">
                                     部门 <span id="sort-department" class="ml-1">⇅</span>
                                 </th>
                                 <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortTable('level')">
@@ -123,7 +135,7 @@
                 </div>
                 
                 <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-                    <p><strong>权重说明：</strong>默认权重为1.0，可设置0.5-2.0范围内的权重值</p>
+                    <p><strong>权重说明：</strong>默认权重为10，可设置1-100范围内的权重值</p>
                     <p><strong>百分比计算：</strong>最后一位销售的百分比自动调整确保总和为100%</p>
                 </div>
             </div>
@@ -149,6 +161,9 @@
                                 <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortStatusTable('leadCount')">
                                     已分配条数 <span id="status-sort-leadCount" class="ml-1">⇅</span>
                                 </th>
+                                <th class="p-3 text-center cursor-pointer hover:bg-gray-100" onclick="sortStatusTable('leadRatio')">
+                                    获得线索占比 <span id="status-sort-leadRatio" class="ml-1">⇅</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="status-panel">
@@ -160,7 +175,7 @@
 
             <div class="bg-white p-6 rounded-xl shadow-md">
                 <h2 class="text-xl font-semibold mb-4">分配日志</h2>
-                <div id="log-panel" class="h-64 overflow-y-auto bg-gray-50 p-3 rounded-lg">
+                <div id="log-panel" class="overflow-y-auto bg-gray-50 p-3 rounded-lg" style="height: 512px;">
                     <p class="text-gray-500 text-center">暂无分配记录</p>
                 </div>
             </div>
@@ -171,14 +186,17 @@
 <script>
 // 根据权重计算职级
 function calculateLevel(weight) {
-    if (weight >= 1.2) return 'L3';
-    if (weight >= 0.8) return 'L2';
+    if (weight >= 30) return 'L3';
+    if (weight >= 15) return 'L2';
     return 'L1';
 }
 
 // 生成随机业绩数据
 function generateRandomPerformance() {
     const availableGroups = [
+        '3-市场外投表单',
+        '4-百度SEM',
+        '7-领券',
         '快商通表单在线',
         '市场表单投放',
         '集训营专项投放',
@@ -212,54 +230,75 @@ let salesTeam = [];
 
 // 初始化销售团队数据
 function initializeSalesTeam() {
-    salesTeam = [
-        { 
-            id: 1, name: '张三', weight: 1.5, department: '一部', level: 'L3', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        },
-        { 
-            id: 2, name: '李四', weight: 1.2, department: '一部', level: 'L3', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        },
-        { 
-            id: 3, name: '王五', weight: 1.0, department: '一部', level: 'L2', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        },
-        { 
-            id: 4, name: '赵六', weight: 0.9, department: '二部', level: 'L2', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        },
-        { 
-            id: 5, name: '钱七', weight: 0.8, department: '二部', level: 'L2', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        },
-        { 
-            id: 6, name: '孙八', weight: 1.1, department: '二部', level: 'L2', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        },
-        { 
-            id: 7, name: '周九', weight: 0.7, department: '二部', level: 'L1', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        },
-        { 
-            id: 8, name: '吴十', weight: 1.3, department: '三部', level: 'L3', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        },
-        { 
-            id: 9, name: '陈十一', weight: 0.6, department: '三部', level: 'L1', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        },
-        { 
-            id: 10, name: '刘十二', weight: 0.9, department: '三部', level: 'L2', currentWeight: 0, leadCount: 0,
-            ...generateRandomPerformance()
-        }
+    const staffData = [
+        // 一部
+        { name: '喻琪', department: '一部' },
+        { name: '朱斌', department: '一部' },
+        { name: '张磊', department: '一部' },
+        // 二部
+        { name: '吴俊东', department: '二部' },
+        { name: '吴兴良', department: '二部' },
+        { name: '黄保峰', department: '二部' },
+        // 郑州
+        { name: '谢云龙', department: '郑州' },
+        { name: '陈彪', department: '郑州' },
+        { name: '申亚京', department: '郑州' },
+        { name: '李辉1', department: '郑州' },
+        { name: '孙遗兵', department: '郑州' },
+        { name: '张重庆', department: '郑州' },
+        { name: '张龙', department: '郑州' },
+        { name: '程玉东', department: '郑州' },
+        { name: '贾明瞳', department: '郑州' },
+        // 武汉
+        { name: '汪成', department: '武汉' },
+        { name: '杜小强', department: '武汉' },
+        { name: '何怡捷', department: '武汉' },
+        { name: '庞冬婧', department: '武汉' },
+        { name: '唐笑天', department: '武汉' },
+        { name: '陈浩', department: '武汉' },
+        { name: '魏向琪', department: '武汉' },
+        { name: '陈豹', department: '武汉' },
+        { name: '王启行', department: '武汉' },
+        { name: '刘昱麟', department: '武汉' },
+        { name: '刘旭', department: '武汉' },
+        { name: '穆永新', department: '武汉' },
+        // 成都
+        { name: '张运', department: '成都' },
+        { name: '谭正凯', department: '成都' },
+        { name: '蔡威', department: '成都' },
+        // 西安
+        { name: '刘智龙', department: '西安' },
+        { name: '赵博乐', department: '西安' },
+        { name: '王之东', department: '西安' },
+        // B站
+        { name: '陈思晔', department: 'B站' },
+        { name: '耿梦瑶', department: 'B站' },
+        // 专业课
+        { name: '高红艳', department: '专业课' }
     ];
+
+    salesTeam = staffData.map((staff, index) => ({
+        id: index + 1,
+        name: staff.name,
+        weight: 10, // 默认权重为10
+        department: staff.department,
+        level: calculateLevel(10), // L1级（权重10 < 15）
+        currentWeight: 0,
+        leadCount: 0,
+        ...generateRandomPerformance()
+    }));
+    
+    // 默认按部门排序
+    sortConfig.column = 'department';
+    sortConfig.direction = 'asc';
+    applySorting();
 }
 
 let leadCounter = 0;
 let logs = [];
 let sortConfig = { column: null, direction: null }; // 排序配置：column和direction
 let statusSortConfig = { column: 'weight', direction: 'desc' }; // 右侧分配状态表格的排序配置，默认按设定权重降序
+let currentView = 'flat'; // 当前视图模式：'flat' 或 'group'
 
 // 计算权重百分比
 function calculatePercentages() {
@@ -343,7 +382,7 @@ function reset() {
 // 添加销售
 function addUser() {
     const newId = Math.max(...salesTeam.map(u => u.id), 0) + 1;
-    const defaultWeight = 1.0;
+    const defaultWeight = 10;
     salesTeam.push({
         id: newId,
         name: `销售${newId}`,
@@ -369,7 +408,7 @@ function updateUser(id, field, value) {
     if (user) {
         if (field === 'weight') {
             const weight = parseFloat(value);
-            if (weight >= 0.5 && weight <= 2.0) {
+            if (weight >= 1 && weight <= 100) {
                 user[field] = weight;
                 // 权重改变时自动更新职级
                 user.level = calculateLevel(weight);
@@ -426,42 +465,133 @@ function hideStaffCard(user) {
     }
 }
 
+// 视图切换功能
+function switchView(viewType) {
+    currentView = viewType;
+    
+    // 更新按钮样式
+    const flatBtn = document.getElementById('flat-view-btn');
+    const groupBtn = document.getElementById('group-view-btn');
+    
+    if (viewType === 'flat') {
+        flatBtn.className = 'px-3 py-1 rounded-md text-sm transition-all duration-200 bg-blue-500 text-white';
+        groupBtn.className = 'px-3 py-1 rounded-md text-sm transition-all duration-200 text-gray-600 hover:bg-gray-200';
+    } else {
+        flatBtn.className = 'px-3 py-1 rounded-md text-sm transition-all duration-200 text-gray-600 hover:bg-gray-200';
+        groupBtn.className = 'px-3 py-1 rounded-md text-sm transition-all duration-200 bg-blue-500 text-white';
+    }
+    
+    // 更新表头样式
+    const deptHeader = document.getElementById('department-header');
+    if (viewType === 'group') {
+        // 分组视图下，部门列不可排序
+        deptHeader.className = 'p-3 text-center text-gray-400';
+        deptHeader.onclick = null;
+    } else {
+        // 平铺视图下，部门列可排序
+        deptHeader.className = 'p-3 text-center cursor-pointer hover:bg-gray-100';
+        deptHeader.onclick = () => sortTable('department');
+    }
+    
+    // 重新渲染表格
+    renderTeamTable();
+}
+
 // 渲染团队配置表格
 function renderTeamTable() {
     const percentages = calculatePercentages();
     const tbody = document.getElementById('team-table');
     
-    tbody.innerHTML = salesTeam.map((user, index) => `
-        <tr class="border-b hover:bg-gray-50">
-            <td class="p-3 font-medium text-gray-900">
-                <span class="staff-name-hover"
-                      onmouseenter="showStaffCard(event, ${JSON.stringify(user).replace(/"/g, '&quot;')})"
-                      onmouseleave="hideStaffCard(${JSON.stringify(user).replace(/"/g, '&quot;')})">
-                    ${user.name}
-                </span>
-            </td>
-            <td class="p-3 text-center text-orange-600 font-semibold">${user.department}</td>
-            <td class="p-3 text-center text-purple-600 font-semibold">${user.level}</td>
-            <td class="p-3 text-center">
-                <input type="number" value="${user.weight}" step="0.1" min="0.5" max="2.0"
-                       onchange="updateUser(${user.id}, 'weight', this.value)"
-                       class="w-20 p-2 border rounded text-center text-blue-600 font-semibold bg-white text-sm">
-            </td>
-            <td class="p-3 text-center">
-                <span class="font-semibold ${index === salesTeam.length - 1 ? 'text-red-600' : 'text-blue-600'}">
-                    ${percentages[index]?.toFixed(1) || 0}%
-                </span>
-                ${index === salesTeam.length - 1 ? '<div class="text-xs text-red-500">(自动调整)</div>' : ''}
-            </td>
-            <td class="p-3 text-center">
-                <button onclick="removeUser(${user.id})" 
-                        class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 font-bold" 
-                        title="删除">
-                    ×
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    if (currentView === 'flat') {
+        // 平铺视图 - 原有逻辑
+        tbody.innerHTML = salesTeam.map((user, index) => `
+            <tr class="border-b hover:bg-gray-50">
+                <td class="p-3 font-medium text-gray-900">
+                    <span class="staff-name-hover"
+                          onmouseenter="showStaffCard(event, ${JSON.stringify(user).replace(/"/g, '&quot;')})"
+                          onmouseleave="hideStaffCard(${JSON.stringify(user).replace(/"/g, '&quot;')})">
+                        ${user.name}
+                    </span>
+                </td>
+                <td class="p-3 text-center text-orange-600 font-semibold">${user.department}</td>
+                <td class="p-3 text-center text-purple-600 font-semibold">${user.level}</td>
+                <td class="p-3 text-center">
+                    <input type="number" value="${user.weight}" step="1" min="1" max="100"
+                           onchange="updateUser(${user.id}, 'weight', this.value)"
+                           class="w-24 p-2 border rounded text-center text-blue-600 font-semibold bg-white text-sm">
+                </td>
+                <td class="p-3 text-center">
+                    <span class="font-semibold ${index === salesTeam.length - 1 ? 'text-red-600' : 'text-blue-600'}">
+                        ${percentages[index]?.toFixed(1) || 0}%
+                    </span>
+                    ${index === salesTeam.length - 1 ? '<div class="text-xs text-red-500">(自动调整)</div>' : ''}
+                </td>
+                <td class="p-3 text-center">
+                    <button onclick="removeUser(${user.id})" 
+                            class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 font-bold" 
+                            title="删除">
+                        ×
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } else {
+        // 分组视图 - 按部门分组
+        const departments = ['一部', '二部', '郑州', '武汉', '成都', '西安', 'B站', '专业课'];
+        let groupedHTML = '';
+        
+        departments.forEach(dept => {
+            const deptUsers = salesTeam.filter(user => user.department === dept);
+            if (deptUsers.length === 0) return;
+            
+            // 部门分组标题行
+            groupedHTML += `
+                <tr class="bg-gray-100 border-b-2 border-gray-300">
+                    <td colspan="6" class="p-3 font-bold text-gray-800 text-lg">
+                        <span class="text-orange-600">${dept}</span> (${deptUsers.length}人)
+                    </td>
+                </tr>
+            `;
+            
+            // 该部门的员工行
+            deptUsers.forEach((user, index) => {
+                const globalIndex = salesTeam.findIndex(u => u.id === user.id);
+                groupedHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 font-medium text-gray-900 pl-8">
+                            <span class="staff-name-hover"
+                                  onmouseenter="showStaffCard(event, ${JSON.stringify(user).replace(/"/g, '&quot;')})"
+                                  onmouseleave="hideStaffCard(${JSON.stringify(user).replace(/"/g, '&quot;')})">
+                                ${user.name}
+                            </span>
+                        </td>
+                        <td class="p-3 text-center text-orange-600 font-semibold">${user.department}</td>
+                        <td class="p-3 text-center text-purple-600 font-semibold">${user.level}</td>
+                        <td class="p-3 text-center">
+                            <input type="number" value="${user.weight}" step="1" min="1" max="100"
+                                   onchange="updateUser(${user.id}, 'weight', this.value)"
+                                   class="w-24 p-2 border rounded text-center text-blue-600 font-semibold bg-white text-sm">
+                        </td>
+                        <td class="p-3 text-center">
+                            <span class="font-semibold ${globalIndex === salesTeam.length - 1 ? 'text-red-600' : 'text-blue-600'}">
+                                ${percentages[globalIndex]?.toFixed(1) || 0}%
+                            </span>
+                            ${globalIndex === salesTeam.length - 1 ? '<div class="text-xs text-red-500">(自动调整)</div>' : ''}
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="removeUser(${user.id})" 
+                                    class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 font-bold" 
+                                    title="删除">
+                                ×
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+        
+        tbody.innerHTML = groupedHTML;
+    }
     
     // 添加员工卡片
     renderStaffCards();
@@ -531,7 +661,10 @@ function renderStatus() {
             
             // 特殊处理部门排序
             if (statusSortConfig.column === 'department') {
-                const departmentOrder = { '一部': 1, '二部': 2, '三部': 3 };
+                const departmentOrder = { 
+                    '一部': 1, '二部': 2, '郑州': 3, '武汉': 4, 
+                    '成都': 5, '西安': 6, 'B站': 7, '专业课': 8 
+                };
                 valueA = departmentOrder[valueA] || 999;
                 valueB = departmentOrder[valueB] || 999;
             }
@@ -539,6 +672,12 @@ function renderStatus() {
             else if (statusSortConfig.column === 'weight') {
                 valueA = parseFloat(valueA);
                 valueB = parseFloat(valueB);
+            }
+            // 特殊处理线索占比排序
+            else if (statusSortConfig.column === 'leadRatio') {
+                const totalLeadCount = salesTeam.reduce((sum, user) => sum + user.leadCount, 0);
+                valueA = totalLeadCount > 0 ? (a.leadCount / totalLeadCount * 100) : 0;
+                valueB = totalLeadCount > 0 ? (b.leadCount / totalLeadCount * 100) : 0;
             }
             
             if (valueA < valueB) {
@@ -560,7 +699,7 @@ function renderStatus() {
     const userRows = sortedTeam.map(user => {
         const isLastAssigned = logs.length > 0 && logs[0].userId === user.id;
         const weightPercentage = totalWeight > 0 ? (user.weight / totalWeight * 100).toFixed(1) : '0.0';
-        const currentWeightPercentage = totalWeight > 0 ? (user.currentWeight / totalWeight * 100).toFixed(1) : '0.0';
+        const leadRatio = totalLeadCount > 0 ? (user.leadCount / totalLeadCount * 100).toFixed(1) : '0.0';
         
         return `
             <tr class="border-b ${isLastAssigned ? 'highlight bg-yellow-50' : 'hover:bg-gray-50'}">
@@ -574,8 +713,11 @@ function renderStatus() {
                 <td class="p-3 text-center text-orange-600 font-semibold">${user.department}</td>
                 <td class="p-3 text-center text-purple-600 font-semibold">${user.level}</td>
                 <td class="p-3 text-center text-blue-600 font-semibold text-sm">${user.weight} (${weightPercentage}%)</td>
-                <td class="p-3 text-center font-mono text-sm ${user.currentWeight >= 0 ? 'text-green-600' : 'text-red-600'}">${user.currentWeight.toFixed(1)} (${currentWeightPercentage}%)</td>
+                <td class="p-3 text-center font-mono text-sm ${user.currentWeight >= 0 ? 'text-green-600' : 'text-red-600'}">${Math.round(user.currentWeight)}</td>
                 <td class="p-3 text-center font-bold text-blue-700">${user.leadCount}</td>
+                <td class="p-3 text-center font-bold text-purple-700">
+                    ${leadRatio}%
+                </td>
             </tr>
         `;
     }).join('');
@@ -587,8 +729,11 @@ function renderStatus() {
             <td class="p-3 text-center text-gray-600">-</td>
             <td class="p-3 text-center text-gray-600">-</td>
             <td class="p-3 text-center font-bold text-blue-700 text-sm">${totalWeight.toFixed(1)} (100%)</td>
-            <td class="p-3 text-center font-bold font-mono text-sm ${totalCurrentWeight >= 0 ? 'text-green-700' : 'text-red-700'}">${totalCurrentWeight.toFixed(1)} (100%)</td>
+            <td class="p-3 text-center font-bold font-mono text-sm ${totalCurrentWeight >= 0 ? 'text-green-700' : 'text-red-700'}">${Math.round(totalCurrentWeight)}</td>
             <td class="p-3 text-center font-bold text-blue-700">${totalLeadCount}</td>
+            <td class="p-3 text-center font-bold text-purple-700">
+                100%
+            </td>
         </tr>
     `;
     
@@ -615,8 +760,107 @@ function renderLogs() {
     panel.scrollTop = 0;
 }
 
+// 应用排序的核心函数
+function applySorting() {
+    let sortedTeam = [...salesTeam];
+    
+    if (currentView === 'group') {
+        // 分组视图：在各部门内部排序
+        if (sortConfig.column && sortConfig.direction && sortConfig.column !== 'department') {
+            const departments = ['一部', '二部', '郑州', '武汉', '成都', '西安', 'B站', '专业课'];
+            let newSortedTeam = [];
+            
+            departments.forEach(dept => {
+                const deptUsers = sortedTeam.filter(user => user.department === dept);
+                if (deptUsers.length === 0) return;
+                
+                deptUsers.sort((a, b) => {
+                    let valueA = a[sortConfig.column];
+                    let valueB = b[sortConfig.column];
+                    
+                    if (sortConfig.column === 'level') {
+                        const levelOrder = { 'L1': 1, 'L2': 2, 'L3': 3 };
+                        valueA = levelOrder[valueA] || 999;
+                        valueB = levelOrder[valueB] || 999;
+                    } else if (typeof valueA === 'string') {
+                        valueA = valueA.toLowerCase();
+                        valueB = valueB.toLowerCase();
+                    }
+                    
+                    if (valueA < valueB) {
+                        return sortConfig.direction === 'asc' ? -1 : 1;
+                    }
+                    if (valueA > valueB) {
+                        return sortConfig.direction === 'asc' ? 1 : -1;
+                    }
+                    return 0;
+                });
+                
+                newSortedTeam.push(...deptUsers);
+            });
+            
+            sortedTeam = newSortedTeam;
+        } else {
+            // 分组视图下默认按部门+ID排序
+            const departments = ['一部', '二部', '郑州', '武汉', '成都', '西安', 'B站', '专业课'];
+            let newSortedTeam = [];
+            departments.forEach(dept => {
+                const deptUsers = sortedTeam.filter(user => user.department === dept);
+                deptUsers.sort((a, b) => a.id - b.id);
+                newSortedTeam.push(...deptUsers);
+            });
+            sortedTeam = newSortedTeam;
+        }
+    } else {
+        // 平铺视图：全局排序
+        if (sortConfig.column && sortConfig.direction) {
+            sortedTeam.sort((a, b) => {
+                let valueA = a[sortConfig.column];
+                let valueB = b[sortConfig.column];
+                
+                // 特殊处理部门排序
+                if (sortConfig.column === 'department') {
+                    const departmentOrder = { 
+                        '一部': 1, '二部': 2, '郑州': 3, '武汉': 4, 
+                        '成都': 5, '西安': 6, 'B站': 7, '专业课': 8 
+                    };
+                    valueA = departmentOrder[valueA] || 999;
+                    valueB = departmentOrder[valueB] || 999;
+                } else if (sortConfig.column === 'level') {
+                    // 特殊处理职级排序
+                    const levelOrder = { 'L1': 1, 'L2': 2, 'L3': 3 };
+                    valueA = levelOrder[valueA] || 999;
+                    valueB = levelOrder[valueB] || 999;
+                } else if (typeof valueA === 'string') {
+                    // 处理其他字符串类型的排序
+                    valueA = valueA.toLowerCase();
+                    valueB = valueB.toLowerCase();
+                }
+                
+                if (valueA < valueB) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (valueA > valueB) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        } else {
+            // 如果没有排序配置，则按ID排序（默认顺序）
+            sortedTeam.sort((a, b) => a.id - b.id);
+        }
+    }
+    
+    salesTeam = sortedTeam;
+}
+
 // 表格排序功能
 function sortTable(column) {
+    // 在分组视图下，不允许按部门排序（因为已经按部门分组）
+    if (currentView === 'group' && column === 'department') {
+        return;
+    }
+    
     // 如果点击的是当前排序列，则切换排序方向
     if (sortConfig.column === column) {
         if (sortConfig.direction === 'asc') {
@@ -633,44 +877,7 @@ function sortTable(column) {
         sortConfig.direction = 'asc';
     }
     
-    // 应用排序
-    let sortedTeam = [...salesTeam];
-    
-    if (sortConfig.column && sortConfig.direction) {
-        sortedTeam.sort((a, b) => {
-            let valueA = a[sortConfig.column];
-            let valueB = b[sortConfig.column];
-            
-            // 特殊处理部门排序
-            if (sortConfig.column === 'department') {
-                const departmentOrder = { '一部': 1, '二部': 2, '三部': 3 };
-                valueA = departmentOrder[valueA] || 999;
-                valueB = departmentOrder[valueB] || 999;
-            } else if (sortConfig.column === 'level') {
-                // 特殊处理职级排序
-                const levelOrder = { 'L1': 1, 'L2': 2, 'L3': 3 };
-                valueA = levelOrder[valueA] || 999;
-                valueB = levelOrder[valueB] || 999;
-            } else if (typeof valueA === 'string') {
-                // 处理其他字符串类型的排序
-                valueA = valueA.toLowerCase();
-                valueB = valueB.toLowerCase();
-            }
-            
-            if (valueA < valueB) {
-                return sortConfig.direction === 'asc' ? -1 : 1;
-            }
-            if (valueA > valueB) {
-                return sortConfig.direction === 'asc' ? 1 : -1;
-            }
-            return 0;
-        });
-    } else {
-        // 如果没有排序配置，则按ID排序（默认顺序）
-        sortedTeam.sort((a, b) => a.id - b.id);
-    }
-    
-    salesTeam = sortedTeam;
+    applySorting();
     updateSortIndicators();
     renderAll();
 }
@@ -704,6 +911,12 @@ function updateSortIndicators() {
     indicators.forEach(indicator => {
         const element = document.getElementById(`sort-${indicator}`);
         if (element) {
+            // 在分组视图下，部门列不显示排序指示器（因为已经按部门分组）
+            if (currentView === 'group' && indicator === 'department') {
+                element.textContent = '';
+                return;
+            }
+            
             if (sortConfig.column === indicator) {
                 if (sortConfig.direction === 'asc') {
                     element.textContent = '↑';
@@ -722,7 +935,7 @@ function updateSortIndicators() {
 
 // 更新右侧分配状态排序指示器
 function updateStatusSortIndicators() {
-    const indicators = ['department', 'weight', 'leadCount'];
+    const indicators = ['department', 'weight', 'leadCount', 'leadRatio'];
     
     indicators.forEach(indicator => {
         const element = document.getElementById(`status-sort-${indicator}`);

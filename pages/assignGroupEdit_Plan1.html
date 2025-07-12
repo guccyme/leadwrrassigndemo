@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分配组管理 - 方案1（大编辑）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; 
+            /* 移除整体的padding，改为只在主内容区域留白 */
+        }
+        .sidebar-menu { min-height: 100vh; }
+        .menu-item { transition: all 0.2s; }
+        .menu-item:hover { background-color: #f3f4f6; }
+        .menu-item.active { background-color: #3b82f6; color: white; }
+        
+        /* 主内容区域留白 */
+        .main-content {
+            padding: 0 200px;
+        }
+        
+        /* 员工卡片样式 */
+        .staff-card {
+            position: absolute;
+            z-index: 1000;
+            display: none;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            width: 280px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .staff-card.show {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .staff-name-hover {
+            position: relative;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-color: transparent;
+            transition: all 0.2s;
+        }
+        
+        .staff-name-hover:hover {
+            text-decoration-color: #3b82f6;
+            color: #3b82f6;
+        }
+        
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        /* 表格中的小头像 */
+        .table-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            margin-right: 8px;
+        }
+        
+        /* 成员管理表格行高度 */
+        #member-table tr {
+            height: 48.5px;
+        }
+        
+        /* 动态高度计算 - 优化表格高度 */
+        .dynamic-table-container {
+            /* 高度由JavaScript动态计算 */
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .table-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 600px; /* 增加最小高度，确保能显示20+行 */
+        }
+        
+        /* 基本信息区域 - 自然展开 */
+        .basic-info-section {
+            /* 移除高度限制，让内容自然展开 */
+        }
+        
+        /* 压缩基本信息区域内部间距 */
+        .basic-info-section textarea {
+            rows: 2; /* 减少行数 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- 左侧菜单 - 保持靠左贴边 -->
+        <div class="w-64 bg-white shadow-lg sidebar-menu">
+            <div class="p-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold">天</span>
+                    </div>
+                    <span class="text-xl font-semibold text-gray-800">管理后台</span>
+                </div>
+            </div>
+            
+            <nav class="mt-8">
+                <div class="px-4">
+                    <div class="menu-item p-3 rounded-lg cursor-pointer flex items-center space-x-3">
+                        <span class="text-gray-600">📊</span>
+                        <span class="text-gray-700">基础数据</span>
+                    </div>
+                    <div class="menu-item p-3 rounded-lg cursor-pointer flex items-center space-x-3 mt-1">
+                        <span class="text-gray-600">🎯</span>
+                        <span class="text-gray-700">桌道配置</span>
+                    </div>
+                    <div class="menu-item active p-3 rounded-lg cursor-pointer flex items-center space-x-3 mt-1">
+                        <span class="text-white">🔄</span>
+                        <span>线索池配置</span>
+                    </div>
+                    <div class="ml-6 mt-2">
+                        <div class="menu-item p-2 rounded cursor-pointer text-sm text-gray-600 hover:text-gray-800">
+                            线索池管理
+                        </div>
+                        <div class="menu-item active p-2 rounded cursor-pointer text-sm bg-blue-100 text-blue-700">
+                            分配组
+                        </div>
+                    </div>
+                    <div class="menu-item p-3 rounded-lg cursor-pointer flex items-center space-x-3 mt-1">
+                        <span class="text-gray-600">⚙️</span>
+                        <span class="text-gray-700">线索规则配置</span>
+                    </div>
+                    <div class="menu-item p-3 rounded-lg cursor-pointer flex items-center space-x-3 mt-1">
+                        <span class="text-gray-600">🏷️</span>
+                        <span class="text-gray-700">标签配置</span>
+                    </div>
+                    <div class="menu-item p-3 rounded-lg cursor-pointer flex items-center space-x-3 mt-1">
+                        <span class="text-gray-600">📝</span>
+                        <span class="text-gray-700">内容中心</span>
+                    </div>
+                    <div class="menu-item p-3 rounded-lg cursor-pointer flex items-center space-x-3 mt-1">
+                        <span class="text-gray-600">👥</span>
+                        <span class="text-gray-700">用户权限</span>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- 右侧主内容区 - 添加两边留白 -->
+        <div class="flex-1 overflow-hidden">
+            <div class="h-full overflow-y-auto">
+                <!-- 页面标题栏 -->
+                <div class="bg-white border-b border-gray-200">
+                    <div class="main-content py-4">
+                        <h1 class="text-2xl font-semibold text-gray-900">编辑分配组</h1>
+                        <p class="text-sm text-gray-600 mt-1">方案1：大编辑模式 - 统一管理成员和权重配置</p>
+                    </div>
+                </div>
+
+                <!-- 主要内容区域 -->
+                <div class="main-content py-6">
+                    <!-- 基本信息 -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6 basic-info-section">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">基本信息</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    分配组名称 <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" value="市场表单投放" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       placeholder="请输入分配组名称" maxlength="15">
+                                <p class="text-xs text-gray-500 mt-1">6 / 15</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    分配组类型 <span class="text-red-500">*</span>
+                                </label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="sales" selected>销售</option>
+                                    <option value="operation">运营</option>
+                                    <option value="service">服务</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                分配组描述 <span class="text-red-500">*</span>
+                            </label>
+                            <textarea rows="2" 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      placeholder="请输入分配组的相关描述" maxlength="50">抖音&小红书&B站</textarea>
+                            <p class="text-xs text-gray-500 mt-1">9 / 50</p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                分配方式 <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex space-x-6">
+                                <label class="flex items-center">
+                                    <input type="radio" name="allocation_method" value="sequential" class="text-blue-500 focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-gray-700">顺序轮询</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="allocation_method" value="weighted" checked class="text-blue-500 focus:ring-blue-500">
+                                    <span class="ml-2 text-sm text-gray-700">权重轮询</span>
+                                </label>
+                                <label class="flex items-center opacity-50">
+                                    <input type="radio" name="allocation_method" value="reserved" disabled class="text-gray-400">
+                                    <span class="ml-2 text-sm text-gray-400">预留</span>
+                                </label>
+                                <label class="flex items-center opacity-50">
+                                    <input type="radio" name="allocation_method" value="holding" disabled class="text-gray-400">
+                                    <span class="ml-2 text-sm text-gray-400">按保有量</span>
+                                </label>
+                                <label class="flex items-center opacity-50">
+                                    <input type="radio" name="allocation_method" value="capacity" disabled class="text-gray-400">
+                                    <span class="ml-2 text-sm text-gray-400">按承载力</span>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">注：运营类型仅支持顺序轮询</p>
+                        </div>
+                    </div>
+
+                    <!-- 成员配置 -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-gray-900">分配组成员</h2>
+                            <div class="flex items-center space-x-3">
+                                <!-- 视图切换按钮 -->
+                                <div class="flex bg-gray-100 rounded-lg p-1">
+                                    <button id="flat-view-btn" onclick="switchView('flat')" 
+                                            class="px-3 py-1 rounded-md text-sm transition-all duration-200 bg-blue-500 text-white">
+                                        平铺视图
+                                    </button>
+                                    <button id="group-view-btn" onclick="switchView('group')" 
+                                            class="px-3 py-1 rounded-md text-sm transition-all duration-200 text-gray-600 hover:bg-gray-200">
+                                        分组视图
+                                    </button>
+                                </div>
+                                <span class="text-sm text-gray-600">已选择 <span class="font-semibold text-blue-600" id="member-count">28</span> 人</span>
+                                <button onclick="addMember()" class="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 flex items-center space-x-2">
+                                    <span>+</span>
+                                    <span>添加成员</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 成员列表 - 动态高度 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden dynamic-table-container">
+                            <!-- 固定表头 -->
+                            <div class="bg-gray-50 border-b border-gray-200">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="text-sm text-gray-600" id="member-table-header">
+                                            <th class="p-3 text-left w-40 cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">
+                                                姓名 <span id="sort-name" class="ml-1">⇅</span>
+                                            </th>
+                                            <th class="p-3 text-center w-24 cursor-pointer hover:bg-gray-100" onclick="sortTable('department')" id="department-header">
+                                                部门 <span id="sort-department" class="ml-1">⇅</span>
+                                            </th>
+                                            <th class="p-3 text-center w-20 cursor-pointer hover:bg-gray-100" onclick="sortTable('level')">
+                                                职级 <span id="sort-level" class="ml-1">⇅</span>
+                                            </th>
+                                            <th class="p-3 text-center w-24 cursor-pointer hover:bg-gray-100" onclick="sortTable('weight')">
+                                                权重 <span id="sort-weight" class="ml-1">⇅</span>
+                                            </th>
+                                            <th class="p-3 text-center w-28">权重占比</th>
+                                            <th class="p-3 text-center w-24">操作</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                            
+                            <!-- 可滚动内容区域 - 动态高度 -->
+                            <div class="table-scroll-area">
+                                <table class="w-full">
+                                    <tbody id="member-table">
+                                        <!-- 成员行将通过JavaScript动态生成 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+                            <p><strong>权重说明：</strong>权重范围1-20，默认权重为10，影响线索分配的优先级和频率</p>
+                            <p><strong>权重占比：</strong>基于总权重自动计算，最后一人的占比会自动调整确保总和100%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 员工信息卡片 -->
+    <div id="staff-cards-container"></div>
+
+    <!-- 固定底部按钮区域 -->
+    <div class="fixed bottom-0 right-0 bg-white border-t border-gray-200 shadow-lg" style="width: calc(100% - 16rem);">
+        <div class="main-content py-4">
+            <div class="flex justify-end space-x-3">
+                <button onclick="cancelEdit()" class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    取消
+                </button>
+                <button onclick="saveEdit()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    提交
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// 模拟员工数据 - 修改权重范围为1-20，默认为10
+const selectedMembers = [
+    { id: 1, name: '喻琪', department: '一部', level: 'L1', weight: 10 },
+    { id: 2, name: '朱斌', department: '一部', level: 'L2', weight: 15 },
+    { id: 3, name: '张磊', department: '一部', level: 'L1', weight: 10 },
+    { id: 4, name: '吴俊东', department: '二部', level: 'L2', weight: 20 },
+    { id: 5, name: '吴兴良', department: '二部', level: 'L2', weight: 15 },
+    { id: 6, name: '黄保峰', department: '二部', level: 'L1', weight: 10 },
+    { id: 7, name: '谢云龙', department: '郑州', level: 'L3', weight: 20 },
+    { id: 8, name: '陈彪', department: '郑州', level: 'L2', weight: 15 },
+    { id: 9, name: '申亚京', department: '郑州', level: 'L2', weight: 15 },
+    { id: 10, name: '李辉1', department: '郑州', level: 'L1', weight: 12 },
+    { id: 11, name: '孙遗兵', department: '郑州', level: 'L2', weight: 18 },
+    { id: 12, name: '张重庆', department: '郑州', level: 'L1', weight: 11 },
+    { id: 13, name: '张龙', department: '郑州', level: 'L2', weight: 16 },
+    { id: 14, name: '程玉东', department: '郑州', level: 'L1', weight: 13 },
+    { id: 15, name: '贾明瞳', department: '郑州', level: 'L2', weight: 17 },
+    { id: 16, name: '汪成', department: '武汉', level: 'L2', weight: 19 },
+    { id: 17, name: '杜小强', department: '武汉', level: 'L1', weight: 14 },
+    { id: 18, name: '何怡捷', department: '武汉', level: 'L2', weight: 20 },
+    { id: 19, name: '庞冬婧', department: '武汉', level: 'L1', weight: 12 },
+    { id: 20, name: '唐笑天', department: '武汉', level: 'L2', weight: 18 },
+    { id: 21, name: '陈浩', department: '武汉', level: 'L1', weight: 15 },
+    { id: 22, name: '魏向琪', department: '武汉', level: 'L2', weight: 20 },
+    { id: 23, name: '陈豹', department: '武汉', level: 'L1', weight: 13 },
+    { id: 24, name: '王启行', department: '武汉', level: 'L2', weight: 17 },
+    { id: 25, name: '刘昱麟', department: '武汉', level: 'L1', weight: 14 },
+    { id: 26, name: '张运', department: '成都', level: 'L2', weight: 20 },
+    { id: 27, name: '谭正凯', department: '成都', level: 'L1', weight: 16 },
+    { id: 28, name: '蔡威', department: '成都', level: 'L2', weight: 19 }
+];
+
+// 预定义的头像颜色数组
+const avatarColors = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+    'linear-gradient(135deg, #ff8a80 0%, #ea4c89 100%)',
+    'linear-gradient(135deg, #8fd3f4 0%, #84fab0 100%)',
+    'linear-gradient(135deg, #cbb4d4 0%, #20002c 100%)',
+    'linear-gradient(135deg, #667db6 0%, #0082c8 100%)',
+    'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+    'linear-gradient(135deg, #41295a 0%, #2f0743 100%)',
+    'linear-gradient(135deg, #00416a 0%, #e4e5e6 100%)',
+    'linear-gradient(135deg, #f857a6 0%, #ff5858 100%)',
+    'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)',
+    'linear-gradient(135deg, #a29bfe 0%, #fd79a8 100%)',
+    'linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)',
+    'linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%)',
+    'linear-gradient(135deg, #00b894 0%, #00cec9 100%)',
+    'linear-gradient(135deg, #e17055 0%, #f39c12 100%)',
+    'linear-gradient(135deg, #6c5ce7 0%, #74b9ff 100%)',
+    'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+    'linear-gradient(135deg, #fdcb6e 0%, #e17055 100%)',
+    'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
+    'linear-gradient(135deg, #00b894 0%, #55a3ff 100%)',
+    'linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%)',
+    'linear-gradient(135deg, #fd79a8 0%, #74b9ff 100%)'
+];
+
+// 根据用户ID获取头像颜色
+function getAvatarColor(userId) {
+    return avatarColors[userId % avatarColors.length];
+}
+
+// 生成SVG头像
+function generateAvatarSVG(name, userId, size = 28) {
+    const color = getAvatarColor(userId);
+    const initial = name.charAt(0);
+    
+    return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="background: ${color}; border-radius: 50%;">
+            <text x="50%" y="50%" text-anchor="middle" dy="0.35em" 
+                  fill="white" font-family="Arial, sans-serif" font-size="${size * 0.45}" font-weight="bold">
+                ${initial}
+            </text>
+        </svg>
+    `;
+}
+
+// 生成随机业绩数据
+function generateRandomPerformance() {
+    const availableGroups = [
+        '3-市场外投表单',
+        '4-百度SEM', 
+        '7-领券',
+        '快商通表单在线',
+        '市场表单投放'
+    ];
+    
+    const groupCount = Math.floor(Math.random() * 3) + 1;
+    const selectedGroups = [];
+    const shuffledGroups = [...availableGroups].sort(() => Math.random() - 0.5);
+    
+    for (let i = 0; i < groupCount; i++) {
+        selectedGroups.push(shuffledGroups[i]);
+    }
+    
+    return {
+        monthlyPerformance: Math.floor(Math.random() * 33) + 8,
+        monthlyDeals: Math.floor(Math.random() * 7) + 1,
+        monthlyLeads: Math.floor(Math.random() * 201) + 100,
+        conversionRate: (Math.random() * 2.5 + 0.5).toFixed(1),
+        assignGroup: selectedGroups.join('、')
+    };
+}
+
+// 为每个成员添加业绩数据
+selectedMembers.forEach(member => {
+    Object.assign(member, generateRandomPerformance());
+});
+
+// 全局变量
+let currentView = 'flat'; // 当前视图模式：'flat' 或 'group'
+let sortConfig = { column: null, direction: null }; // 排序配置
+
+// 计算权重百分比
+function calculatePercentages() {
+    const totalWeight = selectedMembers.reduce((sum, member) => sum + member.weight, 0);
+    const percentages = [];
+    let accumulatedPercentage = 0;
+    
+    for (let i = 0; i < selectedMembers.length - 1; i++) {
+        const percentage = (selectedMembers[i].weight / totalWeight) * 100;
+        percentages.push(percentage);
+        accumulatedPercentage += percentage;
+    }
+    
+    if (selectedMembers.length > 0) {
+        percentages.push(100 - accumulatedPercentage);
+    }
+    
+    return percentages;
+}
+
+// 动态调整表格高度 - 优化版本
+function adjustTableHeight() {
+    const tableContainer = document.querySelector('.dynamic-table-container');
+    if (!tableContainer) return;
+    
+    // 计算可用高度：浏览器高度 - 固定底部按钮区域(80px)
+    const availableHeight = window.innerHeight - 80;
+    
+    // 计算其他元素占用的高度
+    const pageHeader = document.querySelector('.bg-white.border-b');
+    const basicInfoSection = document.querySelector('.basic-info-section');
+    const memberHeader = document.querySelector('.flex.items-center.justify-between.mb-4');
+    const memberNote = document.querySelector('.mt-4.p-3.bg-blue-50');
+    const mainContentPadding = 48; // py-6 = 24px * 2
+    
+    const headerHeight = pageHeader ? pageHeader.offsetHeight : 0;
+    const basicInfoHeight = basicInfoSection ? basicInfoSection.offsetHeight : 0;
+    const memberHeaderHeight = memberHeader ? memberHeader.offsetHeight : 0;
+    const memberNoteHeight = memberNote ? memberNote.offsetHeight : 0;
+    
+    // 计算表格可用高度
+    const tableHeight = availableHeight - headerHeight - basicInfoHeight - memberHeaderHeight - memberNoteHeight - mainContentPadding - 60; // 60px for margins and gaps
+    
+    // 设置最小高度600px，确保能显示20+行
+    const finalHeight = Math.max(tableHeight, 600);
+    
+    tableContainer.style.height = finalHeight + 'px';
+    
+    // 调试日志
+    console.log(`窗口高度: ${window.innerHeight}px`);
+    console.log(`表格计算高度: ${tableHeight}px`);
+    console.log(`最终表格高度: ${finalHeight}px`);
+}
+
+// 更新成员权重
+function updateMemberWeight(id, newWeight) {
+    const member = selectedMembers.find(m => m.id === id);
+    if (member && newWeight >= 1 && newWeight <= 20) {
+        member.weight = parseInt(newWeight);
+        renderMemberTable();
+    }
+}
+
+// 移除成员
+function removeMember(id) {
+    if (confirm('确定要移除该成员吗？')) {
+        const index = selectedMembers.findIndex(m => m.id === id);
+        if (index > -1) {
+            selectedMembers.splice(index, 1);
+            renderMemberTable();
+        }
+    }
+}
+
+// 替换成员
+function replaceMember(id) {
+    const member = selectedMembers.find(m => m.id === id);
+    if (member) {
+        const newName = prompt('请输入新成员姓名：');
+        if (newName && newName.trim()) {
+            member.name = newName.trim();
+            // 保持原有的权重和位次不变
+            renderMemberTable();
+        }
+    }
+}
+
+// 添加成员
+function addMember() {
+    const newName = prompt('请输入新成员姓名：');
+    if (newName && newName.trim()) {
+        const newId = Math.max(...selectedMembers.map(m => m.id), 0) + 1;
+        const newMember = {
+            id: newId,
+            name: newName.trim(),
+            department: '一部',
+            level: 'L1',
+            weight: 10, // 默认权重为10
+            ...generateRandomPerformance()
+        };
+        selectedMembers.push(newMember);
+        renderMemberTable();
+    }
+}
+
+// 视图切换功能
+function switchView(viewType) {
+    currentView = viewType;
+    
+    // 更新按钮样式
+    const flatBtn = document.getElementById('flat-view-btn');
+    const groupBtn = document.getElementById('group-view-btn');
+    
+    if (viewType === 'flat') {
+        flatBtn.className = 'px-3 py-1 rounded-md text-sm transition-all duration-200 bg-blue-500 text-white';
+        groupBtn.className = 'px-3 py-1 rounded-md text-sm transition-all duration-200 text-gray-600 hover:bg-gray-200';
+    } else {
+        flatBtn.className = 'px-3 py-1 rounded-md text-sm transition-all duration-200 text-gray-600 hover:bg-gray-200';
+        groupBtn.className = 'px-3 py-1 rounded-md text-sm transition-all duration-200 bg-blue-500 text-white';
+    }
+    
+    // 更新表头样式
+    const deptHeader = document.getElementById('department-header');
+    if (viewType === 'group') {
+        // 分组视图下，部门列不可排序
+        deptHeader.className = 'p-3 text-center w-24 text-gray-400';
+        deptHeader.onclick = null;
+    } else {
+        // 平铺视图下，部门列可排序
+        deptHeader.className = 'p-3 text-center w-24 cursor-pointer hover:bg-gray-100';
+        deptHeader.onclick = () => sortTable('department');
+    }
+    
+    // 重新渲染表格
+    renderMemberTable();
+}
+
+// 应用排序的核心函数
+function applySorting() {
+    if (currentView === 'group') {
+        // 分组视图：在各部门内部排序
+        if (sortConfig.column && sortConfig.direction && sortConfig.column !== 'department') {
+            const departments = ['一部', '二部', '郑州', '武汉', '成都', '西安', 'B站', '专业课'];
+            let newSortedMembers = [];
+            
+            departments.forEach(dept => {
+                const deptMembers = selectedMembers.filter(member => member.department === dept);
+                if (deptMembers.length === 0) return;
+                
+                deptMembers.sort((a, b) => {
+                    let valueA = a[sortConfig.column];
+                    let valueB = b[sortConfig.column];
+                    
+                    if (sortConfig.column === 'level') {
+                        const levelOrder = { 'L1': 1, 'L2': 2, 'L3': 3 };
+                        valueA = levelOrder[valueA] || 999;
+                        valueB = levelOrder[valueB] || 999;
+                    } else if (typeof valueA === 'string') {
+                        valueA = valueA.toLowerCase();
+                        valueB = valueB.toLowerCase();
+                    }
+                    
+                    if (valueA < valueB) {
+                        return sortConfig.direction === 'asc' ? -1 : 1;
+                    }
+                    if (valueA > valueB) {
+                        return sortConfig.direction === 'asc' ? 1 : -1;
+                    }
+                    return 0;
+                });
+                
+                newSortedMembers.push(...deptMembers);
+            });
+            
+            selectedMembers.length = 0;
+            selectedMembers.push(...newSortedMembers);
+        } else {
+            // 分组视图下默认按部门+ID排序
+            const departments = ['一部', '二部', '郑州', '武汉', '成都', '西安', 'B站', '专业课'];
+            let newSortedMembers = [];
+            departments.forEach(dept => {
+                const deptMembers = selectedMembers.filter(member => member.department === dept);
+                deptMembers.sort((a, b) => a.id - b.id);
+                newSortedMembers.push(...deptMembers);
+            });
+            selectedMembers.length = 0;
+            selectedMembers.push(...newSortedMembers);
+        }
+    } else {
+        // 平铺视图：全局排序
+        if (sortConfig.column && sortConfig.direction) {
+            selectedMembers.sort((a, b) => {
+                let valueA = a[sortConfig.column];
+                let valueB = b[sortConfig.column];
+                
+                // 特殊处理部门排序
+                if (sortConfig.column === 'department') {
+                    const departmentOrder = { 
+                        '一部': 1, '二部': 2, '郑州': 3, '武汉': 4, 
+                        '成都': 5, '西安': 6, 'B站': 7, '专业课': 8 
+                    };
+                    valueA = departmentOrder[valueA] || 999;
+                    valueB = departmentOrder[valueB] || 999;
+                } else if (sortConfig.column === 'level') {
+                    // 特殊处理职级排序
+                    const levelOrder = { 'L1': 1, 'L2': 2, 'L3': 3 };
+                    valueA = levelOrder[valueA] || 999;
+                    valueB = levelOrder[valueB] || 999;
+                } else if (typeof valueA === 'string') {
+                    // 处理其他字符串类型的排序
+                    valueA = valueA.toLowerCase();
+                    valueB = valueB.toLowerCase();
+                }
+                
+                if (valueA < valueB) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (valueA > valueB) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        } else {
+            // 如果没有排序配置，则按ID排序（默认顺序）
+            selectedMembers.sort((a, b) => a.id - b.id);
+        }
+    }
+}
+
+// 表格排序功能
+function sortTable(column) {
+    // 在分组视图下，不允许按部门排序（因为已经按部门分组）
+    if (currentView === 'group' && column === 'department') {
+        return;
+    }
+    
+    // 如果点击的是当前排序列，则切换排序方向
+    if (sortConfig.column === column) {
+        if (sortConfig.direction === 'asc') {
+            sortConfig.direction = 'desc';
+        } else if (sortConfig.direction === 'desc') {
+            sortConfig.direction = null;
+            sortConfig.column = null;
+        } else {
+            sortConfig.direction = 'asc';
+        }
+    } else {
+        // 如果点击的是新列，则设置为升序
+        sortConfig.column = column;
+        sortConfig.direction = 'asc';
+    }
+    
+    applySorting();
+    updateSortIndicators();
+    renderMemberTable();
+}
+
+// 更新排序指示器
+function updateSortIndicators() {
+    const indicators = ['name', 'department', 'level', 'weight'];
+    
+    indicators.forEach(indicator => {
+        const element = document.getElementById(`sort-${indicator}`);
+        if (element) {
+            // 在分组视图下，部门列不显示排序指示器（因为已经按部门分组）
+            if (currentView === 'group' && indicator === 'department') {
+                element.textContent = '';
+                return;
+            }
+            
+            if (sortConfig.column === indicator) {
+                if (sortConfig.direction === 'asc') {
+                    element.textContent = '↑';
+                    element.style.color = '#3b82f6';
+                } else if (sortConfig.direction === 'desc') {
+                    element.textContent = '↓';
+                    element.style.color = '#3b82f6';
+                }
+            } else {
+                element.textContent = '⇅';
+                element.style.color = '#9ca3af';
+            }
+        }
+    });
+}
+
+// 渲染成员表格
+function renderMemberTable() {
+    const percentages = calculatePercentages();
+    const tbody = document.getElementById('member-table');
+    
+    if (currentView === 'flat') {
+        // 平铺视图 - 原有逻辑
+        tbody.innerHTML = selectedMembers.map((member, index) => `
+            <tr class="border-b hover:bg-gray-50">
+                <td class="p-3 font-medium text-gray-900 w-40">
+                    <div class="flex items-center">
+                        ${generateAvatarSVG(member.name, member.id)}
+                        <span class="staff-name-hover ml-2"
+                              onmouseenter="showStaffCard(event, ${JSON.stringify(member).replace(/"/g, '&quot;')})"
+                              onmouseleave="hideStaffCard(${JSON.stringify(member).replace(/"/g, '&quot;')})">
+                            ${member.name}
+                        </span>
+                    </div>
+                </td>
+                <td class="p-3 text-center text-orange-600 font-semibold w-24">${member.department}</td>
+                <td class="p-3 text-center text-purple-600 font-semibold w-20">${member.level}</td>
+                <td class="p-3 text-center w-24">
+                    <input type="number" value="${member.weight}" step="1" min="1" max="20"
+                           onchange="updateMemberWeight(${member.id}, this.value)"
+                           class="w-14 p-1 border rounded text-center text-blue-600 font-semibold bg-white text-sm">
+                </td>
+                <td class="p-3 text-center w-28">
+                    <span class="font-semibold ${index === selectedMembers.length - 1 ? 'text-red-600' : 'text-blue-600'}">
+                        ${percentages[index]?.toFixed(1) || 0}%
+                    </span>
+                    ${index === selectedMembers.length - 1 ? '<div class="text-xs text-red-500">(自动调整)</div>' : ''}
+                </td>
+                <td class="p-3 text-center w-24">
+                    <div class="flex items-center justify-center space-x-1">
+                        <button onclick="replaceMember(${member.id})" 
+                                class="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50" 
+                                title="替换">
+                            🔄
+                        </button>
+                        <button onclick="removeMember(${member.id})" 
+                                class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 font-bold" 
+                                title="移除">
+                            ×
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    } else {
+        // 分组视图 - 按部门分组
+        const departments = ['一部', '二部', '郑州', '武汉', '成都', '西安', 'B站', '专业课'];
+        let groupedHTML = '';
+        
+        departments.forEach(dept => {
+            const deptMembers = selectedMembers.filter(member => member.department === dept);
+            if (deptMembers.length === 0) return;
+            
+            // 部门分组标题行
+            groupedHTML += `
+                <tr class="bg-gray-100 border-b-2 border-gray-300">
+                    <td colspan="6" class="p-3 font-bold text-gray-800 text-lg">
+                        <span class="text-orange-600">${dept}</span> (${deptMembers.length}人)
+                    </td>
+                </tr>
+            `;
+            
+            // 该部门的员工行
+            deptMembers.forEach((member, index) => {
+                const globalIndex = selectedMembers.findIndex(m => m.id === member.id);
+                groupedHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 font-medium text-gray-900 w-40 pl-8">
+                            <div class="flex items-center">
+                                ${generateAvatarSVG(member.name, member.id)}
+                                <span class="staff-name-hover ml-2"
+                                      onmouseenter="showStaffCard(event, ${JSON.stringify(member).replace(/"/g, '&quot;')})"
+                                      onmouseleave="hideStaffCard(${JSON.stringify(member).replace(/"/g, '&quot;')})">
+                                    ${member.name}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="p-3 text-center text-orange-600 font-semibold w-24">${member.department}</td>
+                        <td class="p-3 text-center text-purple-600 font-semibold w-20">${member.level}</td>
+                        <td class="p-3 text-center w-24">
+                            <input type="number" value="${member.weight}" step="1" min="1" max="20"
+                                   onchange="updateMemberWeight(${member.id}, this.value)"
+                                   class="w-14 p-1 border rounded text-center text-blue-600 font-semibold bg-white text-sm">
+                        </td>
+                        <td class="p-3 text-center w-28">
+                            <span class="font-semibold ${globalIndex === selectedMembers.length - 1 ? 'text-red-600' : 'text-blue-600'}">
+                                ${percentages[globalIndex]?.toFixed(1) || 0}%
+                            </span>
+                            ${globalIndex === selectedMembers.length - 1 ? '<div class="text-xs text-red-500">(自动调整)</div>' : ''}
+                        </td>
+                        <td class="p-3 text-center w-24">
+                            <div class="flex items-center justify-center space-x-1">
+                                <button onclick="replaceMember(${member.id})" 
+                                        class="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50" 
+                                        title="替换">
+                                    🔄
+                                </button>
+                                <button onclick="removeMember(${member.id})" 
+                                        class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 font-bold" 
+                                        title="移除">
+                                    ×
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+        
+        tbody.innerHTML = groupedHTML;
+    }
+    
+    // 更新成员数量
+    document.getElementById('member-count').textContent = selectedMembers.length;
+    
+    renderStaffCards();
+}
+
+// 取消编辑
+function cancelEdit() {
+    if (confirm('确定要取消编辑吗？未保存的更改将丢失。')) {
+        // 这里可以返回列表页面或重置表单
+        window.history.back();
+    }
+}
+
+// 保存编辑
+function saveEdit() {
+    // 表单验证
+    const groupName = document.querySelector('input[type="text"]').value.trim();
+    const groupDesc = document.querySelector('textarea').value.trim();
+    const groupType = document.querySelector('select').value;
+    const allocMethod = document.querySelector('input[name="allocation_method"]:checked')?.value;
+    
+    if (!groupName) {
+        alert('请输入分配组名称');
+        return;
+    }
+    
+    if (!groupDesc) {
+        alert('请输入分配组描述');
+        return;
+    }
+    
+    if (!allocMethod) {
+        alert('请选择分配方式');
+        return;
+    }
+    
+    if (selectedMembers.length === 0) {
+        alert('请至少添加一个成员');
+        return;
+    }
+    
+    // 构造提交数据
+    const formData = {
+        name: groupName,
+        description: groupDesc,
+        type: groupType,
+        allocationMethod: allocMethod,
+        members: selectedMembers.map(member => ({
+            id: member.id,
+            name: member.name,
+            weight: member.weight
+        }))
+    };
+    
+    console.log('提交数据:', formData);
+    
+    // 这里可以发送到后端API
+    // fetch('/api/assign-groups', { method: 'POST', body: JSON.stringify(formData) })
+    
+    alert('保存成功！');
+}
+
+// 显示员工卡片
+function showStaffCard(event, member) {
+    // 隐藏所有其他卡片
+    document.querySelectorAll('.staff-card').forEach(card => {
+        card.classList.remove('show');
+    });
+    
+    const card = document.getElementById(`staff-card-${member.id}`);
+    if (card) {
+        const rect = event.target.getBoundingClientRect();
+        
+        card.style.transform = 'none';
+        
+        let leftPos = rect.left + 80;
+        let topPos = rect.top + window.scrollY;
+        
+        if (leftPos + 280 > window.innerWidth) {
+            leftPos = window.innerWidth - 280 - 20;
+        }
+        
+        if (leftPos < 20) {
+            leftPos = 20;
+        }
+        
+        card.style.left = leftPos + 'px';
+        card.style.top = topPos + 'px';
+        
+        card.classList.add('show');
+    }
+}
+
+// 隐藏员工卡片
+function hideStaffCard(member) {
+    const card = document.getElementById(`staff-card-${member.id}`);
+    if (card) {
+        card.classList.remove('show');
+    }
+}
+
+// 渲染员工卡片
+function renderStaffCards() {
+    const container = document.getElementById('staff-cards-container');
+    
+    // 清除现有卡片
+    container.innerHTML = '';
+    
+    selectedMembers.forEach(member => {
+        const card = document.createElement('div');
+        card.id = `staff-card-${member.id}`;
+        card.className = 'staff-card';
+        card.style.transform = 'none';
+        card.innerHTML = `
+            <div class="flex items-start gap-3 mb-3">
+                <div class="avatar" style="background: ${getAvatarColor(member.id)}">
+                    ${member.name.charAt(0)}
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg text-gray-900">${member.name}</h3>
+                    <p class="text-sm text-gray-500">${member.department} · ${member.level}级</p>
+                </div>
+            </div>
+            
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">本月业绩：</span>
+                    <span class="font-semibold text-green-600">${member.monthlyPerformance}万</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">本月已成交：</span>
+                    <span class="font-semibold text-blue-600">${member.monthlyDeals}单</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">本月新分线索：</span>
+                    <span class="font-semibold text-purple-600">${member.monthlyLeads}条</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">动态转化率：</span>
+                    <span class="font-semibold text-orange-600">${member.conversionRate}%</span>
+                </div>
+                <div class="pt-2 border-t">
+                    <div class="text-gray-600 text-xs mb-1">所在分配组：</div>
+                    <div class="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium leading-relaxed">
+                        ${member.assignGroup}
+                    </div>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+    // 默认按部门排序
+    sortConfig.column = 'department';
+    sortConfig.direction = 'asc';
+    applySorting();
+    updateSortIndicators();
+    renderMemberTable();
+    
+    // 初始化表格高度
+    adjustTableHeight();
+});
+
+// 窗口大小变化时重新调整表格高度
+window.addEventListener('resize', adjustTableHeight);
+
+// 点击页面其他地方隐藏所有卡片
+document.addEventListener('click', (event) => {
+    if (!event.target.closest('.staff-name-hover') && !event.target.closest('.staff-card')) {
+        document.querySelectorAll('.staff-card').forEach(card => {
+            card.classList.remove('show');
+        });
+    }
+});
+
+// 类型选择变化时的处理
+document.querySelector('select').addEventListener('change', function(e) {
+    const selectedType = e.target.value;
+    const radioButtons = document.querySelectorAll('input[name="allocation_method"]');
+    
+    if (selectedType === 'operation') {
+        // 运营类型只能选择顺序轮询
+        radioButtons.forEach(radio => {
+            if (radio.value === 'sequential') {
+                radio.checked = true;
+                radio.disabled = false;
+            } else {
+                radio.checked = false;
+                radio.disabled = true;
+            }
+        });
+    } else {
+        // 销售和服务类型可以选择顺序轮询和权重轮询
+        radioButtons.forEach(radio => {
+            if (radio.value === 'sequential' || radio.value === 'weighted') {
+                radio.disabled = false;
+            } else {
+                radio.disabled = true;
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html> 

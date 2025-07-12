@@ -1,0 +1,286 @@
+<div class="ant-modal-content">
+  <!-- 关闭按钮 -->
+  <button type="button" aria-label="Close" class="ant-modal-close">
+    <span class="ant-modal-close-x">
+      <span role="img" aria-label="close" class="anticon anticon-close ant-modal-close-icon">
+        <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+          <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+        </svg>
+      </span>
+    </span>
+  </button>
+  
+  <!-- 标题 -->
+  <div class="ant-modal-header">
+    <div class="ant-modal-title" id=":r15:">编辑分配组</div>
+  </div>
+  
+  <!-- 表单内容 -->
+  <div class="ant-modal-body">
+    <form id="edit" class="ant-form ant-form-horizontal css-1k1g8bt">
+      
+      <!-- 分配组名称 -->
+      <div class="ant-form-item css-1k1g8bt ant-form-item-has-success">
+        <div class="ant-row ant-form-item-row css-1k1g8bt">
+          <div class="ant-col ant-col-6 ant-form-item-label css-1k1g8bt">
+            <label for="edit_name" class="ant-form-item-required" title="分配组名称">分配组名称</label>
+          </div>
+          <div class="ant-col ant-col-14 ant-form-item-control css-1k1g8bt">
+            <div class="ant-form-item-control-input">
+              <div class="ant-form-item-control-input-content">
+                <span class="ant-input-affix-wrapper css-1k1g8bt ant-input-outlined ant-input-status-success">
+                  <input autocomplete="off" placeholder="请输入" maxlength="15" id="edit_name" aria-required="true" 
+                         class="ant-input css-1k1g8bt" type="text" value="快商通表单在线">
+                  <span class="ant-input-suffix">
+                    <span class="ant-input-show-count-suffix">7 / 15</span>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 分配组描述 -->
+      <div class="ant-form-item css-1k1g8bt ant-form-item-has-success">
+        <div class="ant-row ant-form-item-row css-1k1g8bt">
+          <div class="ant-col ant-col-6 ant-form-item-label css-1k1g8bt">
+            <label for="edit_memo" class="ant-form-item-required" title="分配组描述">分配组描述</label>
+          </div>
+          <div class="ant-col ant-col-14 ant-form-item-control css-1k1g8bt">
+            <div class="ant-form-item-control-input">
+              <div class="ant-form-item-control-input-content">
+                <span class="ant-input-affix-wrapper ant-input-textarea-affix-wrapper ant-input-textarea-show-count css-1k1g8bt ant-input-show-count ant-input-outlined ant-input-status-success" 
+                      data-count="4 / 50">
+                  <textarea rows="4" placeholder="请输入分配组的相关描述" id="edit_memo" aria-required="true" 
+                            maxlength="50" class="ant-input css-1k1g8bt">在线19</textarea>
+                  <span class="ant-input-suffix">
+                    <span class="ant-input-data-count">4 / 50</span>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 分配组类型 -->
+      <div class="ant-form-item css-1k1g8bt ant-form-item-has-success">
+        <div class="ant-row ant-form-item-row css-1k1g8bt">
+          <div class="ant-col ant-col-6 ant-form-item-label css-1k1g8bt">
+            <label for="edit_type" class="" title="分配组类型">分配组类型</label>
+          </div>
+          <div class="ant-col ant-col-14 ant-form-item-control css-1k1g8bt">
+            <div class="ant-form-item-control-input">
+              <div class="ant-form-item-control-input-content">
+                <div class="ant-select ant-select-outlined ant-select-in-form-item ant-select-status-success css-1k1g8bt ant-select-single ant-select-show-arrow">
+                  <div class="ant-select-selector">
+                    <span class="ant-select-selection-search">
+                      <input type="search" id="edit_type" autocomplete="off" class="ant-select-selection-search-input" 
+                             role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="edit_type_list" 
+                             aria-autocomplete="list" aria-controls="edit_type_list" readonly="" unselectable="on" 
+                             value="" style="opacity: 0;">
+                    </span>
+                    <span class="ant-select-selection-item" title="销售">销售</span>
+                  </div>
+                  <span class="ant-select-arrow" unselectable="on" aria-hidden="true" style="user-select: none;">
+                    <span role="img" aria-label="down" class="anticon anticon-down ant-select-suffix">
+                      <svg viewBox="64 64 896 896" focusable="false" data-icon="down" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 分配组成员 -->
+      <div class="ant-form-item css-1k1g8bt ant-form-item-has-success">
+        <div class="ant-row ant-form-item-row css-1k1g8bt">
+          <div class="ant-col ant-col-6 ant-form-item-label css-1k1g8bt">
+            <label for="edit_member_scopes" class="ant-form-item-required" title="分配组成员">分配组成员</label>
+          </div>
+          <div class="ant-col ant-col-14 ant-form-item-control css-1k1g8bt">
+            <div class="ant-form-item-control-input">
+              <div class="ant-form-item-control-input-content">
+                <button type="button" class="ant-btn css-1k1g8bt ant-btn-dashed">
+                  <span class="ant-btn-icon">
+                    <span role="img" aria-label="plus" class="anticon anticon-plus">
+                      <svg viewBox="64 64 896 896" focusable="false" data-icon="plus" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z"></path>
+                        <path d="M192 474h672q8 0 8 8v60q0 8-8 8H160q-8 0-8-8v-60q0-8 8-8z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  <span>分配组成员</span>
+                </button>
+                
+                <!-- 员工标签列表 -->
+                <div style="margin-top: 8px;">
+                  
+                  <!-- 员工1：王力 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/436765_lh1Fn-TPTn-eIEp_1734090948/0">
+                    </span>
+                    王力
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 员工2：贾海瑞 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/184840_Dy8UEmcbQSmCr0s_1751106651/0">
+                    </span>
+                    贾海瑞
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 员工3：吴俊东 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/960505_CJTaI_JoQKmgoJB_1704375643/0">
+                    </span>
+                    吴俊东
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 员工4：李雪腾 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/652003_IaP8VoNFTM6QdmE_1731480088/0">
+                    </span>
+                    李雪腾
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 员工5：杨斌 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/550928_L7oJ2H34QRq-A0K_1729066829/0">
+                    </span>
+                    杨斌
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 员工6：薛政 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/827598_7UW3DKZNQz-8fws_1732153199/0">
+                    </span>
+                    薛政
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 员工7：赵阳 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/479838_J1xO6uVkR8KYEGi_1720089046/0">
+                    </span>
+                    赵阳
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 员工8：杨志超 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/936968_pjNzf4rPTaScW4j_1724404796/0">
+                    </span>
+                    杨志超
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 员工9：刘明全 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/777436_uTKvnEiKTfifPnb_1709796070/0">
+                    </span>
+                    刘明全
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 员工10：张伟 -->
+                  <span class="ant-tag ant-tag-processing css-1k1g8bt" style="margin-bottom: 4px; padding: 4px; font-size: 12px; line-height: 24px;">
+                    <span class="ant-avatar ant-avatar-square ant-avatar-image css-1k1g8bt" 
+                          style="margin-right: 6px; background: var(--ant-primary-color); color: rgb(255, 255, 255); width: 24px; height: 24px; font-size: 12px; line-height: 22px;">
+                      <img src="https://wework.qpic.cn/wwpic3az/967433_pYMZ-f4TQjK6ZR7_1711162978/0">
+                    </span>
+                    张伟
+                    <span role="img" aria-label="close" tabindex="-1" class="anticon anticon-close ant-tag-close-icon">
+                      <svg fill-rule="evenodd" viewBox="64 64 896 896" focusable="false" data-icon="close" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                        <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      </svg>
+                    </span>
+                  </span>
+                  
+                  <!-- 更多员工... -->
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </form>
+  </div>
+  
+  <!-- 底部按钮 -->
+  <div class="ant-modal-footer">
+    <button type="button" class="ant-btn css-1k1g8bt ant-btn-default">
+      <span>取 消</span>
+    </button>
+    <button type="button" class="ant-btn css-1k1g8bt ant-btn-primary">
+      <span>确 定</span>
+    </button>
+  </div>
+  
+</div>

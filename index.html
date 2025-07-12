@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM线索分配系统 - Demo展示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; 
+        }
+        .demo-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+        .demo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-primary { background-color: #3b82f6; color: white; }
+        .badge-secondary { background-color: #6b7280; color: white; }
+        .badge-success { background-color: #10b981; color: white; }
+        .badge-warning { background-color: #f59e0b; color: white; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- 头部 -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-lg">CRM</span>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-semibold text-gray-900">线索分配系统</h1>
+                            <p class="text-sm text-gray-600">Demo展示平台</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="badge badge-success">V1.3</span>
+                        <a href="https://gitee.com/kaoyanvip/leadwrrassigndemo" target="_blank" 
+                           class="text-blue-600 hover:text-blue-800 text-sm">
+                            📂 源码仓库
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主内容 -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- 项目介绍 -->
+            <div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">项目介绍</h2>
+                <div class="prose text-gray-600">
+                    <p>这是一个CRM线索分配系统的静态原型展示，包含多个功能模块和算法演示。</p>
+                    <p>系统采用权重轮询算法，支持多种分配策略，为产品设计和开发提供参考。</p>
+                </div>
+            </div>
+
+            <!-- Demo列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 分配组编辑 - 主要版本 -->
+                <div class="demo-card bg-white rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">分配组编辑</h3>
+                        <span class="badge badge-primary">推荐</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        完整的分配组管理界面，支持成员管理、权重配置、双视图模式等功能。
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="badge badge-secondary">Plan1</span>
+                            <span class="text-xs text-gray-500">v1.3</span>
+                        </div>
+                        <a href="pages/assignGroupEdit_Plan1.html" 
+                           class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                            查看Demo
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 分配组编辑 - 替代方案 -->
+                <div class="demo-card bg-white rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">分配组编辑</h3>
+                        <span class="badge badge-secondary">备选</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        替代方案的分配组管理界面，不同的交互设计和布局方案。
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="badge badge-warning">Plan2</span>
+                            <span class="text-xs text-gray-500">v1.0</span>
+                        </div>
+                        <a href="pages/assignGroupEdit_Plan2.html" 
+                           class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                            查看Demo
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 权重轮询演示 -->
+                <div class="demo-card bg-white rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">权重轮询算法</h3>
+                        <span class="badge badge-success">核心</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        权重轮询算法的可视化演示，展示分配逻辑和算法效果。
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="badge badge-success">WRR</span>
+                            <span class="text-xs text-gray-500">v2.7</span>
+                        </div>
+                        <a href="pages/lead_assignWRR.html" 
+                           class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors text-sm">
+                            查看Demo
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 高级功能演示 -->
+                <div class="demo-card bg-white rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">高级分配功能</h3>
+                        <span class="badge badge-warning">高级</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        多算法支持、智能权重计算、性能分析等高级功能演示。
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="badge badge-warning">Advanced</span>
+                            <span class="text-xs text-gray-500">v1.0</span>
+                        </div>
+                        <a href="pages/lead_assign_advanced.html" 
+                           class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors text-sm">
+                            查看Demo
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 基础演示 -->
+                <div class="demo-card bg-white rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">基础分配演示</h3>
+                        <span class="badge badge-secondary">基础</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        基础的线索分配功能演示，适合初步了解系统功能。
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="badge badge-secondary">Basic</span>
+                            <span class="text-xs text-gray-500">v1.0</span>
+                        </div>
+                        <a href="pages/lead_assign_demo.html" 
+                           class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                            查看Demo
+                        </a>
+                    </div>
+                </div>
+
+                <!-- AI生成版本 -->
+                <div class="demo-card bg-white rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">AI生成版本</h3>
+                        <span class="badge badge-warning">实验</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        由Gemini AI生成的版本2，展示AI辅助开发的可能性。
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="badge badge-warning">Gemini</span>
+                            <span class="text-xs text-gray-500">v2.0</span>
+                        </div>
+                        <a href="pages/version2_from_gemini.html" 
+                           class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors text-sm">
+                            查看Demo
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技术文档 -->
+            <div class="bg-white rounded-lg shadow-sm border p-6 mt-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">📚 技术文档</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a href="docs/readme.md" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <span class="text-blue-500">📖</span>
+                        <span class="text-gray-700">项目说明</span>
+                    </a>
+                    <a href="docs/log.md" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <span class="text-green-500">📝</span>
+                        <span class="text-gray-700">开发日志</span>
+                    </a>
+                    <a href="docs/design_review.md" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <span class="text-purple-500">🎨</span>
+                        <span class="text-gray-700">设计评估</span>
+                    </a>
+                    <a href="PROJECT_STRUCTURE.md" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <span class="text-yellow-500">🏗️</span>
+                        <span class="text-gray-700">项目结构</span>
+                    </a>
+                    <a href="docs/newAssignGroupPageREQ.MD" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <span class="text-red-500">📋</span>
+                        <span class="text-gray-700">需求文档</span>
+                    </a>
+                    <a href="docs/staffinfo.md" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <span class="text-indigo-500">👥</span>
+                        <span class="text-gray-700">员工信息</span>
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="bg-white border-t mt-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-600">
+                        © 2024 CRM线索分配系统 Demo
+                    </div>
+                    <div class="flex items-center space-x-4 text-sm text-gray-600">
+                        <span>技术栈：HTML5 + CSS3 + JavaScript + Tailwind CSS</span>
+                        <span>•</span>
+                        <span>托管于：Gitee Pages</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html> 

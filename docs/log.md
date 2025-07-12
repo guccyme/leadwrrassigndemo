@@ -1,6 +1,33 @@
 # CRM线索分配系统开发日志
 
-## 2024年修改记录
+## 2025年修改记录
+
+### 项目结构优化与数据隐私保护
+
+**修改时间**： 2025-07-12  
+some delight things happen when you do yourself while allow otherone to be himself
+
+**修改内容**:
+1. **项目架构调整**
+   - 删除 `assignGroupEdit_Plan2.html` 文件，简化项目结构
+   - 保留 `assignGroupEdit_Plan1.html` 作为主要演示版本
+   - 创建 `assignGroupEdit_Plan1_internal.html` 作为内部版本
+
+2. **数据隐私保护**
+   - 创建内部版本文件 `pages/assignGroupEdit_Plan1_internal.html`
+   - 内部版本恢复真实员工姓名：喻琪、朱斌、张磊等28名员工
+   - 内部版本恢复真实部门信息：一部、二部、郑州、武汉、成都、西安
+   - 公开版本使用脱敏数据：张小明、李小红、王小华等匿名化姓名
+
+3. **Git忽略配置**
+   - 更新 `.gitignore` 文件，添加内部版本文件的忽略规则
+   - 所有 `*_internal.html` 文件将被Git忽略，不会提交到GitHub
+   - 内部版本文件仅限内部使用，可部署到Gitee等内部平台
+
+4. **部署策略**
+   - GitHub（公开）：仅包含脱敏后的演示版本
+   - Gitee（内部）：可包含真实数据的内部版本
+   - 实现数据隐私保护的同时保证功能完整性
 
 ### Version 2.0 实现 (lead_assign_v2.html)
 

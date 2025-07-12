@@ -551,7 +551,7 @@ function addMember() {
         const newMember = {
             id: newId,
             name: newName.trim(),
-            department: '一部',
+            department: '销售一部',
             level: 'L1',
             weight: 10, // 默认权重为10
             ...generateRandomPerformance()
@@ -598,7 +598,7 @@ function applySorting() {
     if (currentView === 'group') {
         // 分组视图：在各部门内部排序
         if (sortConfig.column && sortConfig.direction && sortConfig.column !== 'department') {
-            const departments = ['一部', '二部', '郑州', '武汉', '成都', '西安', 'B站', '专业课'];
+            const departments = ['销售一部', '销售二部', '华北区', '华中区', '西南区', '西北区', '运营部', '教学部'];
             let newSortedMembers = [];
             
             departments.forEach(dept => {
@@ -634,7 +634,7 @@ function applySorting() {
             selectedMembers.push(...newSortedMembers);
         } else {
             // 分组视图下默认按部门+ID排序
-            const departments = ['一部', '二部', '郑州', '武汉', '成都', '西安', 'B站', '专业课'];
+            const departments = ['销售一部', '销售二部', '华北区', '华中区', '西南区', '西北区', '运营部', '教学部'];
             let newSortedMembers = [];
             departments.forEach(dept => {
                 const deptMembers = selectedMembers.filter(member => member.department === dept);
@@ -654,8 +654,8 @@ function applySorting() {
                 // 特殊处理部门排序
                 if (sortConfig.column === 'department') {
                     const departmentOrder = { 
-                        '一部': 1, '二部': 2, '郑州': 3, '武汉': 4, 
-                        '成都': 5, '西安': 6, 'B站': 7, '专业课': 8 
+                        '销售一部': 1, '销售二部': 2, '华北区': 3, '华中区': 4, 
+                        '西南区': 5, '西北区': 6, '运营部': 7, '教学部': 8 
                     };
                     valueA = departmentOrder[valueA] || 999;
                     valueB = departmentOrder[valueB] || 999;
@@ -792,7 +792,7 @@ function renderMemberTable() {
         `).join('');
     } else {
         // 分组视图 - 按部门分组
-        const departments = ['一部', '二部', '郑州', '武汉', '成都', '西安', 'B站', '专业课'];
+        const departments = ['销售一部', '销售二部', '华北区', '华中区', '西南区', '西北区', '运营部', '教学部'];
         let groupedHTML = '';
         
         departments.forEach(dept => {

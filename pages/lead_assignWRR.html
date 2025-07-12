@@ -239,42 +239,42 @@ function initializeSalesTeam() {
         { name: '刘小强', department: '销售二部' },
         { name: '陈小军', department: '销售二部' },
         { name: '赵小峰', department: '销售二部' },
-        // 郑州
-        { name: '谢云龙', department: '郑州' },
-        { name: '陈彪', department: '郑州' },
-        { name: '申亚京', department: '郑州' },
-        { name: '李辉1', department: '郑州' },
-        { name: '孙遗兵', department: '郑州' },
-        { name: '张重庆', department: '郑州' },
-        { name: '张龙', department: '郑州' },
-        { name: '程玉东', department: '郑州' },
-        { name: '贾明瞳', department: '郑州' },
-        // 武汉
-        { name: '汪成', department: '武汉' },
-        { name: '杜小强', department: '武汉' },
-        { name: '何怡捷', department: '武汉' },
-        { name: '庞冬婧', department: '武汉' },
-        { name: '唐笑天', department: '武汉' },
-        { name: '陈浩', department: '武汉' },
-        { name: '魏向琪', department: '武汉' },
-        { name: '陈豹', department: '武汉' },
-        { name: '王启行', department: '武汉' },
-        { name: '刘昱麟', department: '武汉' },
-        { name: '刘旭', department: '武汉' },
-        { name: '穆永新', department: '武汉' },
-        // 成都
-        { name: '张运', department: '成都' },
-        { name: '谭正凯', department: '成都' },
-        { name: '蔡威', department: '成都' },
-        // 西安
-        { name: '刘智龙', department: '西安' },
-        { name: '赵博乐', department: '西安' },
-        { name: '王之东', department: '西安' },
-        // B站
-        { name: '陈思晔', department: 'B站' },
-        { name: '耿梦瑶', department: 'B站' },
-        // 专业课
-        { name: '高红艳', department: '专业课' }
+        // 华北区
+        { name: '张小七', department: '华北区' },
+        { name: '李小八', department: '华北区' },
+        { name: '王小九', department: '华北区' },
+        { name: '刘小十', department: '华北区' },
+        { name: '陈小十一', department: '华北区' },
+        { name: '赵小十二', department: '华北区' },
+        { name: '孙小十三', department: '华北区' },
+        { name: '周小十四', department: '华北区' },
+        { name: '吴小十五', department: '华北区' },
+        // 华中区
+        { name: '郑小十六', department: '华中区' },
+        { name: '王小十七', department: '华中区' },
+        { name: '李小十八', department: '华中区' },
+        { name: '张小十九', department: '华中区' },
+        { name: '刘小二十', department: '华中区' },
+        { name: '陈小二十一', department: '华中区' },
+        { name: '赵小二十二', department: '华中区' },
+        { name: '孙小二十三', department: '华中区' },
+        { name: '周小二十四', department: '华中区' },
+        { name: '吴小二十五', department: '华中区' },
+        { name: '钱小二十六', department: '华中区' },
+        { name: '黄小二十七', department: '华中区' },
+        // 西南区
+        { name: '李小二十八', department: '西南区' },
+        { name: '张小二十九', department: '西南区' },
+        { name: '刘小三十', department: '西南区' },
+        // 西北区
+        { name: '陈小三十一', department: '西北区' },
+        { name: '赵小三十二', department: '西北区' },
+        { name: '孙小三十三', department: '西北区' },
+        // 运营部
+        { name: '周小三十四', department: '运营部' },
+        { name: '吴小三十五', department: '运营部' },
+        // 教学部
+        { name: '郑小三十六', department: '教学部' }
     ];
 
     salesTeam = staffData.map((staff, index) => ({
@@ -387,7 +387,7 @@ function addUser() {
         id: newId,
         name: `销售${newId}`,
         weight: defaultWeight,
-        department: '一部',
+        department: '销售一部',
         level: calculateLevel(defaultWeight),
         currentWeight: 0,
         leadCount: 0,

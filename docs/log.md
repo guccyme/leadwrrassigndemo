@@ -5,7 +5,6 @@
 ### 项目结构优化与数据隐私保护
 
 **修改时间**： 2025-07-12  
-some delight things happen when you do yourself while allow otherone to be himself
 
 **修改内容**:
 1. **项目架构调整**
@@ -15,8 +14,8 @@ some delight things happen when you do yourself while allow otherone to be himse
 
 2. **数据隐私保护**
    - 创建内部版本文件 `pages/assignGroupEdit_Plan1_internal.html`
-   - 内部版本恢复真实员工姓名：喻琪、朱斌、张磊等28名员工
-   - 内部版本恢复真实部门信息：一部、二部、郑州、武汉、成都、西安
+   - 内部版本恢复真实员工姓名和部门信息：包含28名真实员工数据
+   - 内部版本包含实际业务部门结构和地理分布
    - 公开版本使用脱敏数据：张小明、李小红、王小华等匿名化姓名
 
 3. **Git忽略配置**
@@ -28,6 +27,37 @@ some delight things happen when you do yourself while allow otherone to be himse
    - GitHub（公开）：仅包含脱敏后的演示版本
    - Gitee（内部）：可包含真实数据的内部版本
    - 实现数据隐私保护的同时保证功能完整性
+
+### lead_assignWRR.html 文件脱敏处理
+
+**修改时间**： 2025-07-12  
+
+**修改内容**:
+1. **文件备份与重构**
+   - 创建 `pages/lead_assignWRR_internal.html` 内部版本，保留原始真实数据
+   - 重构 `pages/lead_assignWRR.html` 公开版本，进行数据脱敏处理
+
+2. **员工数据脱敏**
+   - 华北区（原地区A）：9名员工姓名完全脱敏处理
+   - 华中区（原地区B）：12名员工姓名完全脱敏处理
+   - 西南区（原地区C）：3名员工姓名完全脱敏处理
+   - 西北区（原地区D）：3名员工姓名完全脱敏处理
+   - 运营部（原部门A）：2名员工姓名完全脱敏处理
+   - 教学部（原部门B）：1名员工姓名完全脱敏处理
+
+3. **部门名称规范化**
+   - 销售一部、销售二部：保持不变
+   - 地区A → 华北区
+   - 地区B → 华中区  
+   - 地区C → 西南区
+   - 地区D → 西北区
+   - 部门A → 运营部
+   - 部门B → 教学部
+
+4. **功能完整性保证**
+   - 保持36名员工的完整数据结构
+   - 保持部门分布和权重算法逻辑
+   - 所有交互功能和演示效果完全一致
 
 ### Version 2.0 实现 (lead_assign_v2.html)
 
@@ -525,7 +555,7 @@ some delight things happen when you do yourself while allow otherone to be himse
 
 ## 2024-12-19 - 员工数据集成
 - 从 `staffinfo.md` 加载了36人的销售团队数据
-- 涵盖8个部门：一部、二部、郑州、武汉、成都、西安、B站、专业课
+- 涵盖8个部门：一部、二部、华北区、华中区、西南区、西北区、运营部、教学部
 - 所有成员默认权重为10
 - 更新了分组分配选项
 - 包含了完整的员工信息和绩效指标
